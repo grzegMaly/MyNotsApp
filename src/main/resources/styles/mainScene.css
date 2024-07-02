@@ -1,0 +1,23 @@
+.main-scene {
+    -fx-min-width: 1024;
+    -fx-min-height: 720;
+}
+
+.hbox {
+    -fx-alignment: center;
+    -fx-padding: 40;
+    -fx-spacing: 20;
+    -fx-background-color: #3a3a3a;
+}
+
+.welcome-page, .left-bar, .main-form {
+    -fx-background-color: #484848;
+    -fx-background-radius: 15;
+    -fx-border-color: transparent;
+    -fx-border-radius: 15;
+}
+
+.main-form {
+    -fx-padding: 50;
+    -fx-background-color: #606060;
+}

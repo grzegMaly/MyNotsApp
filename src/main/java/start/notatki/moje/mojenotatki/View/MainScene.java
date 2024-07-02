@@ -1,75 +1,63 @@
 package start.notatki.moje.mojenotatki.View;
 
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import javafx.beans.binding.DoubleBinding;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+
 
 public class MainScene extends HBox {
 
-    LeftBar leftBar = new LeftBar();
-    MainForm mainForm = new MainForm();
+    private final LeftBar leftBar = new LeftBar(this);
+    private final StartForm startForm = new StartForm();
+    private MainForm mainForm;
+    HBox hBox = new HBox();
 
-    public MainScene(double width, double height) {
+    public MainScene() {
 
-        this.setWidth(width);
-        this.setHeight(height);
+        this.getStyleClass().add("main-scene");
 
-        loadMainScene();
+        loadStartScene();
         loadLeftBar();
-        loadMainForm();
+        loadWelcomePage();
 
     }
 
-    private void loadMainScene() {
+    public void setMainForm(MainForm mainForm) {
 
-        HBox hBox = new HBox(leftBar, mainForm);
+        this.mainForm = mainForm;
+    }
 
-        hBox.setPadding(new Insets(40));
-        hBox.setAlignment(Pos.CENTER_LEFT);
-        hBox.setSpacing(20);
-        hBox.setBorder(new Border(
-                new BorderStroke(Color.RED, BorderStrokeStyle.SOLID,
-                        CornerRadii.EMPTY, BorderWidths.DEFAULT)
-        ));
-        hBox.setMinWidth(this.getWidth());
-        hBox.setMinHeight(this.getHeight());
+    private void loadStartScene() {
+
+        hBox.setMinWidth(this.getMinWidth());
+        hBox.setMinHeight(this.getMinHeight());
+        hBox.getStyleClass().add("hbox");
 
 
-        hBox.setBackground(
-                new Background(
-                        new BackgroundFill(Color.web("#484848"), CornerRadii.EMPTY, Insets.EMPTY)
-                )
-        );
+        DoubleBinding availableWidth = this.minWidthProperty().subtract(
+                hBox.getPadding().getLeft() + hBox.getPadding().getRight() + hBox.getSpacing());
+
+        leftBar.minWidthProperty().bind(availableWidth.multiply(0.25));
+        startForm.minWidthProperty().bind(availableWidth.multiply(0.75));
+
+        hBox.getChildren().addAll(leftBar, startForm);
         this.getChildren().add(hBox);
+    }
+
+    private void loadWelcomePage() {
+
+        startForm.getStyleClass().add("welcome-page");
     }
 
     private void loadLeftBar() {
 
-        leftBar.setMinWidth(250);
-
-        leftBar.setBackground(new Background(
-                new BackgroundFill(Color.grayRgb(90), new CornerRadii(15), Insets.EMPTY)
-        ));
-
-        leftBar.setBorder(
-                new Border(
-                        new BorderStroke(Color.TRANSPARENT, BorderStrokeStyle.SOLID,
-                                new CornerRadii(15), BorderWidths.DEFAULT)
-                )
-        );
+        leftBar.getStyleClass().add("left-bar");
     }
 
-    private void loadMainForm() {
+    public void loadMainScene() {
 
-        mainForm.setBorder(
-                new Border(
-                        new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID,
-                                CornerRadii.EMPTY, BorderWidths.DEFAULT)
-                )
-        );
 
-        mainForm.setBackground();
+        mainForm.getStyleClass().add("main-form");
+        hBox.getChildren().set(1, mainForm);
     }
 }

@@ -1,26 +1,63 @@
 package start.notatki.moje.mojenotatki.View;
 
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
+public class MainForm extends StartForm {
 
-public class MainForm extends GridPane {
+    private final Button btnSave = new Button("Save");
+    private final Button btnCancel = new Button("Cancel");
+    private final ButtonBar btnBar = new ButtonBar();
+
+    private final Label lblTitle = new Label("Title");
+    private final TextField pfTitle = new TextField();
+    private final ChoiceBox<String> cbType =
+            new ChoiceBox<>(FXCollections.observableArrayList("", "Regular Note", "Plan Note"));
+    TextArea taContent = new TextArea();
+
+
+    GridPane gp = new GridPane();
 
     public MainForm() {
 
-        Label lblTitle = new Label("Tile");
-        TextField tfTile = new TextField();
+        this.setAlignment(null);
 
-        Label lblType = new Label("Type");
+        styleButtons();
+        this.getChildren().clear();
+        this.getChildren().add(gp);
+//        gp.add(btnBar, 0, 0);
+        gp.add(lblTitle, 0, 0);
+        gp.add(btnBar, 3, 0);
+        gp.add(taContent, 0, 3);
+        gp.setGridLinesVisible(true);
+    }
 
-        TextArea taContent = new TextArea();
+    private void styleButtons() {
 
-        this.setGridLinesVisible(true);
+        btnBar.getButtons().addAll(btnCancel, btnSave);
+        btnBar.setPadding(new Insets(5));
 
-        this.add(lblTitle, 1, 1);
-        this.add(tfTile, 1, 2);
+        for (var button : btnBar.getButtons()) {
+
+            Button button1 = (Button) button;
+
+            button1.textFillProperty().set(Color.web("#bbbbbb"));
+
+            button1.setBackground(
+                    new Background(
+                            new BackgroundFill(Color.web("#484848"), CornerRadii.EMPTY, Insets.EMPTY)
+                    )
+            );
+            button1.setBorder(
+                    new Border(
+                            new BorderStroke(Color.TRANSPARENT,
+                                    BorderStrokeStyle.SOLID, new CornerRadii(5), BorderWidths.DEFAULT)
+                    )
+            );
+        }
     }
 }
