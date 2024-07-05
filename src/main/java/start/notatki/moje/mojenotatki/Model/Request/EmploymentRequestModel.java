@@ -1,4 +1,4 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
-public class EmploymentRequstModel {
+public class EmploymentRequestModel {
 }
