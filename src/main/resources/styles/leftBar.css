@@ -1,0 +1,21 @@
+.this-leftBar {
+    -fx-padding: 10;
+}
+
+.btn-VBox {
+    -fx-spacing: 10;
+}
+
+.lb-button {
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 25;
+    -fx-font-style: normal;
+    -fx-font-family: Helvetica;
+    -fx-background-color: #484848;
+    -fx-border-radius: 15;
+}
+
+.lb-button:hover {
+    -fx-background-color: #606060;
+    -fx-text-fill: #d4d4d4;
+}

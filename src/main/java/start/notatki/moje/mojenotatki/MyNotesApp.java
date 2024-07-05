@@ -3,7 +3,7 @@ package start.notatki.moje.mojenotatki;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import start.notatki.moje.mojenotatki.View.MainScene;
+import start.notatki.moje.mojenotatki.Model.View.MainScene;
 
 
 
@@ -13,6 +13,9 @@ public class MyNotesApp extends Application {
         MainScene mainScene = new MainScene();
         Scene scene = new Scene(mainScene);
         scene.getStylesheets().add(getClass().getResource("/styles/mainScene.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/startForm.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/leftBar.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/styles/mainForm.css").toExternalForm());
 
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);

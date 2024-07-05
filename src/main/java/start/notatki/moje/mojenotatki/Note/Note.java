@@ -1,19 +1,32 @@
 package start.notatki.moje.mojenotatki.Note;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Note extends BaseNote {
 
-    public enum Type {
-        SHOPPING, MEETING, DIARY, RECIPE
+    public enum Category {
+        SHOPPING, MEETING, DIARY, RECIPE;
+
+        public static List<String> getNames() {
+            return Arrays.stream(values())
+                    .map(s -> s.name().charAt(0) + s.name().substring(1).toLowerCase())
+                    .collect(Collectors.toList());
+        }
     }
 
-    private Type type;
+    private Category category;
 
-    public Note(String title, String content) {
-        this(title, content, Type.DIARY);
+    public Note(String category) {
+        this.category = Category.valueOf(category.toUpperCase());
     }
 
-    public Note(String title, String content, Type type) {
-        super(title, content);
-        this.type = type;
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = Category.valueOf(category);
     }
 }

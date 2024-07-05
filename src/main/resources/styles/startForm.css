@@ -1,0 +1,9 @@
+.this-startForm {
+    -fx-alignment: center;
+}
+
+.lblWelcome {
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 20;
+    -fx-font-style: italic;
+}

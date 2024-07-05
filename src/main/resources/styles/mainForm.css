@@ -1,0 +1,73 @@
+.thisMainForm {
+    -fx-padding: 20;
+    -fx-alignment: top-center;
+}
+
+.gp {
+    -fx-padding: 15;
+    -fx-vgap: 5;
+    -fx-hgap: 10;
+}
+
+.gp-button {
+    -fx-text-fill: #bbbbbb;
+    -fx-background-color: #484848;
+    -fx-border-color: transparent;
+    -fx-font-family: Helvetica;
+    -fx-border-radius: 5;
+}
+
+.btnBar {
+    -fx-font-size: 15;
+}
+
+.lblTitle, .lblType {
+    -fx-font-family: Helvetica;
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 20;
+}
+
+.tfTitle, .taContent {
+    -fx-control-inner-background: #747474;
+    -fx-text-fill: white;
+}
+
+.tfTitle:focused {
+    -fx-border-color: #484848;
+    -fx-background-insets: 0;
+    -fx-padding: 5;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
+.taContent {
+    -fx-font-size: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.taContent:focused {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.cbType, .cbNoteType, .cbNotePriorities,
+.cbType .list-cell, .cbNoteType .list-cell, .cbNotePriorities .list-cell {
+    -fx-background-color: #484848;
+    -fx-text-fill: white;
+    -fx-font-family: Helvetica;
+}
+.cbType .arrow, .cbNoteType .arrow, .cbNotePriorities .arrow {
+    -fx-background-color: white;
+}
+
+.cbType:hover, .cbNoteType:hover, .cbNotePriorities:hover {
+    -fx-background-color: #747474;
+}
+
+.cbType .list-cell:hover, .cbNoteType .list-cell:hover, .cbNotePriorities .list-cell:hover {
+    -fx-background-color: #747474;
+}
