@@ -17,11 +17,16 @@
     -fx-border-radius: 5;
 }
 
+.gp-button:hover {
+    -fx-text-fill: white;
+    -fx-background-color: #747474;
+}
+
 .btnBar {
     -fx-font-size: 15;
 }
 
-.lblTitle, .lblType {
+.lblTitle, .lblType, .lblDeadline {
     -fx-font-family: Helvetica;
     -fx-text-fill: #bbbbbb;
     -fx-font-size: 20;

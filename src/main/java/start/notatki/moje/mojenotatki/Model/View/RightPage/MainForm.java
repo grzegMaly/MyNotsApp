@@ -2,32 +2,45 @@ package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.util.Callback;
+import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.Note;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+
+import java.time.LocalDate;
 
 public class MainForm extends GridPane {
 
     private final GridPane gp = new GridPane();
 
-    private final StackPane boxes = new StackPane();
 
     private final ButtonBar btnBar = new ButtonBar();
     private final Button btnSave = new Button("Save");
     private final Button btnCancel = new Button("Cancel");
 
+
     private final Label lblTitle = new Label("Title:");
     private final TextField tfTitle = new TextField();
 
+
+    private final StackPane boxes = new StackPane();
     private final Label lblType = new Label("Note Type:");
     private ComboBox<String> cbType;
     private ComboBox<String> cbCategory;
     private ComboBox<String> cbPriorities;
 
     private final TextArea taContent = new TextArea();
+
+    private final Label lblDeadline = new Label("Deadline:");
+    private final DatePicker datePicker = new DatePicker(LocalDate.now());
+
+    private final NoteRequestViewModel viewModel = new NoteRequestViewModel();
 
     private final MainScene mainScene;
 
@@ -37,13 +50,14 @@ public class MainForm extends GridPane {
         this.mainScene = mainScene;
 
         initialCheckBoxes();
+        initialDatePicker();
         loadForm();
     }
 
     private void initialCheckBoxes() {
 
         cbType = initializeType();
-        cbCategory = initializeNoteTypes();
+        cbCategory = initializeCategories();
         cbPriorities = initializeNotePriorities();
     }
 
@@ -59,7 +73,7 @@ public class MainForm extends GridPane {
         return temp;
     }
 
-    private ComboBox<String> initializeNoteTypes() {
+    private ComboBox<String> initializeCategories() {
 
         String CATEGORY = "Category";
 
@@ -83,6 +97,27 @@ public class MainForm extends GridPane {
         return temp;
     }
 
+    private void initialDatePicker() {
+
+        final Callback<DatePicker, DateCell> dayCellFactory = this::createDateCell;
+        datePicker.setDayCellFactory(dayCellFactory);
+    }
+
+    private DateCell createDateCell(DatePicker datePicker) {
+        return new DateCell() {
+
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                    setStyle("-fx-background-color: #ffc0cb;");
+                }
+            }
+        };
+    }
+
     public void loadForm() {
 
         this.getStyleClass().add("thisMainForm");
@@ -90,15 +125,19 @@ public class MainForm extends GridPane {
 
         boxes.getChildren().addAll(cbPriorities, cbCategory);
 
-        styleButtons();
+        styleAndLoadButtons();
         styleOtherElements();
         completeGridPane();
+        deadlineVisibility(true);
     }
 
-    private void styleButtons() {
+    private void styleAndLoadButtons() {
 
         btnBar.getButtons().addAll(btnCancel, btnSave);
         btnBar.getStyleClass().add("btnBar");
+
+        btnSave.setOnAction(this::save);
+        btnCancel.setOnAction(this::cancel);
 
         for (var button : btnBar.getButtons()) {
 
@@ -112,6 +151,7 @@ public class MainForm extends GridPane {
 
         lblTitle.getStyleClass().add("lblTitle");
         lblType.getStyleClass().add("lblType");
+        lblDeadline.getStyleClass().add("lblDeadline");
         taContent.getStyleClass().add("taContent");
     }
 
@@ -164,6 +204,10 @@ public class MainForm extends GridPane {
 
         gp.getRowConstraints().addAll(row0, row1, row2, row3, row4, row5);
 
+        gp.add(btnBar, 3, 0);
+        GridPane.setColumnSpan(btnBar, 2);
+        GridPane.setHalignment(btnBar, HPos.RIGHT);
+
         gp.add(lblTitle, 0, 2);
         gp.add(tfTitle, 1, 2);
         GridPane.setColumnSpan(tfTitle, 2);
@@ -173,9 +217,12 @@ public class MainForm extends GridPane {
 
         gp.add(boxes, 2, 3);
 
-        gp.add(btnBar, 3, 0);
-        GridPane.setColumnSpan(btnBar, 2);
-        GridPane.setHalignment(btnBar, HPos.RIGHT);
+        gp.add(lblDeadline, 3, 2);
+        GridPane.setColumnSpan(lblDeadline, 2);
+        gp.add(datePicker, 3, 3);
+        GridPane.setColumnSpan(datePicker, 2);
+        GridPane.setHalignment(datePicker, HPos.LEFT);
+        GridPane.setValignment(datePicker, VPos.TOP);
 
         gp.add(taContent, 0, 5);
         GridPane.setColumnSpan(taContent, 3);
@@ -188,10 +235,26 @@ public class MainForm extends GridPane {
 
         cbType.setOnAction(evt -> {
             if (cbType.getValue().equals("Regular Note")) {
-                cbCategory.setVisible(true);
+                deadlineVisibility(true);
             } else if (cbType.getValue().equals("Plan Note")) {
-                cbCategory.setVisible(false);
+                deadlineVisibility(false);
             }
         });
+    }
+
+    private void deadlineVisibility(Boolean value) {
+        cbCategory.setVisible(value);
+        lblDeadline.setVisible(!value);
+        datePicker.setVisible(!value);
+    }
+
+    private void save(ActionEvent e) {
+        viewModel.save();
+    }
+
+    private void cancel(ActionEvent e) {
+
+        mainScene.useMainForm(false);
+        viewModel.reset();
     }
 }

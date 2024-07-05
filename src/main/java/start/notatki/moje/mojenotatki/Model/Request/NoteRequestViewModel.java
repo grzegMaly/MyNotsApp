@@ -8,10 +8,12 @@ public class NoteRequestViewModel {
     private final StringProperty title = new SimpleStringProperty("");
     private final StringProperty noteType = new SimpleStringProperty("");
     private final StringProperty categoryPriority = new SimpleStringProperty("");
+    private final StringProperty deadlineDate = new SimpleStringProperty("");
     private final StringProperty content = new SimpleStringProperty("");
     private Boolean regularNote = true;
 
     NoteRequestConverter converter = new NoteRequestConverter();
+    NoteRequestModel model = new NoteRequestModel();
 
     public String getTitle() {
         return title.get();
@@ -40,6 +42,18 @@ public class NoteRequestViewModel {
         }
     }
 
+    public String getDeadlineDate() {
+        return deadlineDate.get();
+    }
+
+    public StringProperty deadlineProperty() {
+        return deadlineDate;
+    }
+
+    public void setDeadlineDate(String date) {
+        this.deadlineDate.set(date);
+    }
+
     public String getCategoryPriority() {
         return categoryPriority.get();
     }
@@ -66,5 +80,15 @@ public class NoteRequestViewModel {
 
     public void save() {
         NoteRequest data = converter.toNoteRequest(this, regularNote);
+        model.save(data);
+        reset();
+    }
+
+    public void reset() {
+
+        this.title.set("");
+        this.noteType.set("");
+        this.categoryPriority.set("");
+        this.content.set("");
     }
 }

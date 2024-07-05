@@ -26,9 +26,9 @@ public class MainScene extends HBox {
         this.getChildren().addAll(leftBar, stackPane);
     }
 
-    public void useMainForm() {
-        startForm.setVisible(false);
-        mainForm.setVisible(true);
+    public void useMainForm(Boolean value) {
+        startForm.setVisible(!value);
+        mainForm.setVisible(value);
     }
 
 
