@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Note extends BaseNote {
+public class RegularNote extends BaseNote {
 
     public enum Category {
         SHOPPING, MEETING, DIARY, RECIPE;
@@ -18,7 +18,7 @@ public class Note extends BaseNote {
 
     private Category category;
 
-    public Note(String category) {
+    public RegularNote(String category) {
         this.category = Category.valueOf(category.toUpperCase());
     }
 

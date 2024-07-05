@@ -1,6 +1,7 @@
 package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
@@ -8,9 +9,10 @@ import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
+import javafx.util.converter.LocalDateStringConverter;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
-import start.notatki.moje.mojenotatki.Note.Note;
+import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
 
 import java.time.LocalDate;
@@ -52,6 +54,7 @@ public class MainForm extends GridPane {
         initialCheckBoxes();
         initialDatePicker();
         loadForm();
+        bindViewModel();
     }
 
     private void initialCheckBoxes() {
@@ -67,7 +70,7 @@ public class MainForm extends GridPane {
 
         ComboBox<String> temp = new ComboBox<>();
         temp.getItems().add(TYPE);
-        temp.getItems().add( "Plan Note");
+        temp.getItems().add("Plan Note");
         temp.setValue(TYPE);
 
         return temp;
@@ -79,7 +82,7 @@ public class MainForm extends GridPane {
 
         ComboBox<String> temp = new ComboBox<>();
         temp.getItems().add(CATEGORY);
-        temp.getItems().addAll(FXCollections.observableArrayList(Note.Category.getNames()));
+        temp.getItems().addAll(FXCollections.observableArrayList(RegularNote.Category.getNames()));
         temp.setValue(CATEGORY);
 
         return temp;
@@ -153,6 +156,7 @@ public class MainForm extends GridPane {
         lblType.getStyleClass().add("lblType");
         lblDeadline.getStyleClass().add("lblDeadline");
         taContent.getStyleClass().add("taContent");
+        taContent.setWrapText(true);
     }
 
     private void completeGridPane() {
@@ -246,6 +250,37 @@ public class MainForm extends GridPane {
         cbCategory.setVisible(value);
         lblDeadline.setVisible(!value);
         datePicker.setVisible(!value);
+    }
+
+    private void bindViewModel() {
+
+        tfTitle.textProperty().bindBidirectional(viewModel.titleProperty());
+        taContent.textProperty().bindBidirectional(viewModel.contentProperty());
+
+        viewModel.noteTypeProperty().bindBidirectional(cbType.valueProperty());
+        viewModel.categoryProperty().bindBidirectional(cbCategory.valueProperty());
+        viewModel.priorityProperty().bindBidirectional(cbPriorities.valueProperty());
+
+        viewModel.noteTypeProperty().addListener((obs, o, n) -> {
+            viewModel.isRegularNote(n.equals("Regular Note"));
+        });
+
+
+        LocalDateStringConverter converter = new LocalDateStringConverter();
+
+        datePicker.valueProperty().addListener((obs2, oldDate, newDate) -> {
+            if (newDate != null) {
+                viewModel.setDeadlineDate(converter.toString(newDate));
+            }
+        });
+
+        viewModel.deadlineDateProperty().addListener((obs2, oldVal, newString) -> {
+            if (newString != null && !newString.isEmpty()) {
+                datePicker.setValue(converter.fromString(newString));
+            } else {
+                datePicker.setValue(LocalDate.now());
+            }
+        });
     }
 
     private void save(ActionEvent e) {
