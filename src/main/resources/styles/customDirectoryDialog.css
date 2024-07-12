@@ -1,0 +1,39 @@
+.lbInfoText, .explorerButton, .tfPath {
+    -fx-font-family: Helvetica;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+}
+
+.tfPath, .explorerButton {
+    -fx-background-color: #747474;
+    -fx-border-color: #3a3a3a;
+}
+.explorerButton:hover{
+    -fx-background-color: #bbbbbb;
+    -fx-border-width: 0;
+}
+
+.button {
+    -fx-text-fill: #bbbbbb;
+    -fx-background-color: #747474;
+    -fx-border-color: transparent;
+    -fx-font-family: Helvetica;
+    -fx-border-radius: 5;
+}
+
+.button:hover {
+    -fx-text-fill: white;
+    -fx-background-color: #bbbbbb;
+}
+
+.btnBar {
+    -fx-font-size: 15;
+}
+
+.dialogScene {
+    -fx-padding: 20;
+    -fx-spacing: 10;
+    -fx-min-width: 300;
+    -fx-min-height: 150;
+    -fx-background-color: #484848;
+}

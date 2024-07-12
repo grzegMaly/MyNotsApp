@@ -1,5 +1,6 @@
 package start.notatki.moje.mojenotatki.Note;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public abstract class BaseNote {
@@ -7,7 +8,13 @@ public abstract class BaseNote {
     private String title;
     private String content;
     private String noteType;
-    private final LocalDateTime createdDate = LocalDateTime.now();
+    private final LocalDate createdDate = LocalDate.now();
+
+    public BaseNote(String title, String content, String noteType) {
+        this.title = title;
+        this.content = content;
+        this.noteType = noteType;
+    }
 
     public String getTitle() {
         return title;
@@ -21,7 +28,7 @@ public abstract class BaseNote {
         return noteType;
     }
 
-    public LocalDateTime getCreatedDate() {
+    public LocalDate getCreatedDate() {
         return createdDate;
     }
 }

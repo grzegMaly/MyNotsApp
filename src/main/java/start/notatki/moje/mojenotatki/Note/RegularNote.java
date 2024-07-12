@@ -18,8 +18,9 @@ public class RegularNote extends BaseNote {
 
     private Category category;
 
-    public RegularNote(String category) {
-        this.category = Category.valueOf(category.toUpperCase());
+    public RegularNote(String title, String content, String noteType, Category category) {
+        super(title, content, noteType);
+        this.category = category;
     }
 
     public Category getCategory() {

@@ -1,7 +1,7 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
-import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineBaseNoteRequest;
+import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.RegularNoteRequest;
 
 public class NoteRequestConverter {
@@ -16,7 +16,7 @@ public class NoteRequestConverter {
                     viewModel.getCategory()
             );
         } else {
-            return new DeadlineBaseNoteRequest(
+            return new DeadlineNoteRequest(
                     viewModel.getTitle(),
                     viewModel.getNoteType(),
                     viewModel.getContent(),

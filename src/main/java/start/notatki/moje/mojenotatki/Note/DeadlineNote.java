@@ -2,7 +2,6 @@ package start.notatki.moje.mojenotatki.Note;
 
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,8 +22,9 @@ public class DeadlineNote extends BaseNote {
     private Priority priority;
     private LocalDate deadline;
 
-    public DeadlineNote(String priority, LocalDate deadline) {
-        this.priority = Priority.valueOf(priority);
+    public DeadlineNote(String title, String content, String noteType, Priority priority, LocalDate deadline) {
+        super(title, content, noteType);
+        this.priority = priority;
         this.deadline = deadline;
     }
 

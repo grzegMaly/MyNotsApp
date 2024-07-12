@@ -1,7 +1,6 @@
 package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
@@ -9,13 +8,13 @@ import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
-import javafx.util.converter.LocalDateStringConverter;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class MainForm extends GridPane {
 
@@ -265,23 +264,26 @@ public class MainForm extends GridPane {
             viewModel.isRegularNote(n.equals("Regular Note"));
         });
 
-
-        LocalDateStringConverter converter = new LocalDateStringConverter();
+        DateTimeFormatter saveFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         datePicker.valueProperty().addListener((obs2, oldDate, newDate) -> {
             if (newDate != null) {
-                viewModel.setDeadlineDate(converter.toString(newDate));
+
+                String saveDate = newDate.format(saveFormatter);
+                viewModel.setDeadlineDate(saveDate);
             }
         });
 
         viewModel.deadlineDateProperty().addListener((obs2, oldVal, newString) -> {
             if (newString != null && !newString.isEmpty()) {
-                datePicker.setValue(converter.fromString(newString));
+                LocalDate date = LocalDate.parse(newString, saveFormatter);
+                datePicker.setValue(date);
             } else {
                 datePicker.setValue(LocalDate.now());
             }
         });
     }
+
 
     private void save(ActionEvent e) {
         viewModel.save();
