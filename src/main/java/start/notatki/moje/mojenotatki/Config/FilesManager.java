@@ -1,13 +1,9 @@
 package start.notatki.moje.mojenotatki.Config;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 import java.util.Properties;
 
 public class FilesManager {
@@ -20,9 +16,7 @@ public class FilesManager {
 
             properties.load(input);
         } catch (IOException ex) {
-
-            //Fixme: Custom Exception
-            ex.printStackTrace();
+            //Ignore
         }
     }
 
@@ -30,22 +24,28 @@ public class FilesManager {
         return properties.getProperty(key);
     }
 
-    private static Path getConfigFile() {
+    private static Path getPath(String... elements) {
+        return Paths.get(Path.of("").toAbsolutePath().toString(), elements);
+    }
+
+    private static Path getConfigFilePath() {
+
         String configDir = getProperty("configFile.dir");
         String configFile = getProperty("configFile.fileName");
-        return Paths.get(Path.of("").toAbsolutePath().toString(), configDir, configFile).normalize();
+
+        return getPath(configDir, configFile);
     }
 
     public static String getSaveNotesPath() {
 
-        return findValueInConfigFile(getConfigFile(), "notesDirectory");
+        return findValueInFile(getConfigFilePath(), "notesDirectory");
     }
 
     public static boolean checkNotesDirectoryExistence() {
 
-        Path path = getConfigFile();
+        Path path = getConfigFilePath();
 
-        String notesDirectoryPath = findValueInConfigFile(path, "notesDirectory");
+        String notesDirectoryPath = findValueInFile(path, "notesDirectory");
 
         if (notesDirectoryPath != null) {
             Path notesDirectory = Path.of(notesDirectoryPath);
@@ -55,7 +55,7 @@ public class FilesManager {
         return false;
     }
 
-    private static String findValueInConfigFile(Path configFilePath, String key) {
+    private static String findValueInFile(Path configFilePath, String key) {
 
         try (BufferedReader reader = Files.newBufferedReader(configFilePath)) {
 
@@ -69,7 +69,7 @@ public class FilesManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            FilesManager.registerException(e);
         }
 
         return null;
@@ -77,7 +77,7 @@ public class FilesManager {
 
     public static void setConfigKey(String key, String value) {
 
-        Path path = getConfigFile();
+        Path path = getConfigFilePath();
 
         StringBuilder lines = new StringBuilder();
         boolean keyExists = false;
@@ -94,7 +94,7 @@ public class FilesManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            FilesManager.registerException(e);
         }
 
         if (!keyExists) {
@@ -104,7 +104,31 @@ public class FilesManager {
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             writer.write(lines.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            FilesManager.registerException(e);
+        }
+
+        try {
+            Files.createDirectories(Path.of(value));
+        } catch (IOException e) {
+            FilesManager.registerException(e);
+        }
+    }
+
+    public static void registerException(Exception exc) {
+
+        String logsDir = getProperty("logs.dir");
+        String logsFile = getProperty("logs.fileName");
+
+        Path path = getPath(logsDir, logsFile);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
+            writer.write("Exception: " + exc.getClass().getName());
+            writer.newLine();
+            writer.write("Message: " + exc.getMessage());
+            writer.newLine();
+            writer.newLine();
+        } catch (IOException e) {
+            //Ignore
         }
     }
 }

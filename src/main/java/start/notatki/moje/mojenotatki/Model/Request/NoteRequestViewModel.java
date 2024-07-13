@@ -92,8 +92,9 @@ public class NoteRequestViewModel {
 
     public void save() {
         BaseNoteRequest data = converter.toNoteRequest(this, regularNote);
-        model.save(data);
-        reset();
+        if (model.save(data)) {
+            reset();
+        }
     }
 
     public void reset() {

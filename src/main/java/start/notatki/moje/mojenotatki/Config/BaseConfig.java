@@ -17,9 +17,7 @@ public class BaseConfig {
 
             properties.load(input);
         } catch (IOException ex) {
-
-            //Fixme: Custom Exception
-            ex.printStackTrace();
+            FilesManager.registerException(ex);
         }
     }
 
@@ -47,25 +45,7 @@ public class BaseConfig {
         return getProperty("startForm");
     }
 
-    public static String getOutputDirectory() {
-        return getProperty("outputDirectory");
-    }
-
     public static String getCustomDirectoryDialog() {
         return getProperty("customDirectoryDialog");
-    }
-
-    public static void setOutputDirectory(String absolutePath) {
-
-        Path path = Path.of(absolutePath);
-        if (Files.exists(path) && Files.isDirectory(path)) {
-            properties.setProperty("path", path.toAbsolutePath().toString());
-
-            try (BufferedWriter writer = Files.newBufferedWriter(Path.of(PROPERTIES_FILE))) {
-                properties.store(writer, "Updated output directory");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

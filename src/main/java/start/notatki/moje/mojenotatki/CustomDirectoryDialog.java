@@ -29,7 +29,7 @@ public class CustomDirectoryDialog extends Stage {
     HBox selectingBox = new HBox();
     VBox dialogScene = new VBox();
 
-    Optional<String> result = Optional.empty();
+    private Optional<String> result = Optional.empty();
 
     public CustomDirectoryDialog(Stage owner) {
         initOwner(owner);

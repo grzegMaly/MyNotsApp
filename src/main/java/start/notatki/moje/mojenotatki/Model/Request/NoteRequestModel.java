@@ -4,10 +4,10 @@ import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.RegularNoteRequest;
+import start.notatki.moje.mojenotatki.MyNotesApp;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,10 +18,15 @@ public class NoteRequestModel {
     private final StringBuilder sb = new StringBuilder();
     BaseNote note;
 
-    public void save(BaseNoteRequest req) {
+    public boolean save(BaseNoteRequest req) {
 
         if (!FilesManager.checkNotesDirectoryExistence()) {
-            return;
+            MyNotesApp.checkOrSetOutputDirectory();
+            System.out.println(FilesManager.checkNotesDirectoryExistence());
+        }
+
+        if (!FilesManager.checkNotesDirectoryExistence()) {
+            return false;
         }
 
         String title = req.getTitle() + ".txt";
@@ -32,10 +37,12 @@ public class NoteRequestModel {
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             writer.write(sb.toString());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            FilesManager.registerException(e);
         }
 
         sb.setLength(0);
+
+        return true;
     }
 
     private void convertContent(BaseNoteRequest req) {
