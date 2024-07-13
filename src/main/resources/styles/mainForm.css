@@ -76,3 +76,9 @@
 .cbType .list-cell:hover, .cbNoteType .list-cell:hover, .cbNotePriorities .list-cell:hover {
     -fx-background-color: #747474;
 }
+
+.badElement {
+    -fx-border-color: red;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}

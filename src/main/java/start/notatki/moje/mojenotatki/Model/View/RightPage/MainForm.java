@@ -2,6 +2,7 @@ package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -15,6 +16,8 @@ import start.notatki.moje.mojenotatki.Model.View.MainScene;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainForm extends GridPane {
 
@@ -266,6 +269,11 @@ public class MainForm extends GridPane {
 
         DateTimeFormatter saveFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+        if (viewModel.deadlineDateProperty().get() == null || viewModel.deadlineDateProperty().get().isEmpty()) {
+            String saveDate = LocalDate.now().format(saveFormatter);
+            viewModel.setDeadlineDate(saveDate);
+        }
+
         datePicker.valueProperty().addListener((obs2, oldDate, newDate) -> {
             if (newDate != null) {
 
@@ -286,7 +294,67 @@ public class MainForm extends GridPane {
 
 
     private void save(ActionEvent e) {
+
+        if (!validateElements()) {
+            addListeners();
+            return;
+        }
         viewModel.save();
+    }
+
+    private boolean validateElements() {
+
+        boolean flag = true;
+
+        if (taContent.getText().isEmpty() || taContent.getText().isBlank()) {
+            taContent.getStyleClass().add("badElement");
+            flag = false;
+        }
+
+        if (tfTitle.getText().isEmpty() || tfTitle.getText().isBlank()) {
+            tfTitle.getStyleClass().add("badElement");
+            flag = false;
+        }
+
+        if (cbType.getValue().equals("Regular Note")) {
+            if (cbCategory.getValue().equals("Category")) {
+                cbCategory.getStyleClass().add("badElement");
+                flag = false;
+            }
+        } else if (cbType.getValue().equals("Plan Note")) {
+            if (cbPriorities.getValue().equals("Priority")) {
+                cbPriorities.getStyleClass().add("badElement");
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    private void addListeners() {
+
+        tfTitle.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty() && !newValue.isBlank()) {
+                tfTitle.getStyleClass().remove("badElement");
+            }
+        });
+
+        taContent.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty() && !newValue.isBlank()) {
+                taContent.getStyleClass().remove("badElement");
+            }
+        });
+
+        cbType.valueProperty().addListener((observable, oldValue, newValue) -> {
+            cbType.getStyleClass().remove("badElement");
+        });
+
+        cbCategory.valueProperty().addListener((observable, oldValue, newValue) -> {
+            cbCategory.getStyleClass().remove("badElement");
+        });
+
+        cbPriorities.valueProperty().addListener((observable, oldValue, newValue) -> {
+            cbPriorities.getStyleClass().remove("badElement");
+        });
     }
 
     private void cancel(ActionEvent e) {
