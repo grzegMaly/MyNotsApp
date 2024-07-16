@@ -1,10 +1,19 @@
 package start.notatki.moje.mojenotatki.Config;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import start.notatki.moje.mojenotatki.Note.BaseNote;
+import start.notatki.moje.mojenotatki.Note.DeadlineNote;
+import start.notatki.moje.mojenotatki.Note.RegularNote;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FilesManager {
 
@@ -130,5 +139,45 @@ public class FilesManager {
         } catch (IOException e) {
             //Ignore
         }
+    }
+
+    public static ObservableList<BaseNote> loadNotes() {
+
+        String path = getSaveNotesPath();
+        List<List<String>> stringNotes = new ArrayList<>();
+
+        try (Stream<Path> files = Files.list(Path.of(path))) {
+
+            Set<String> fileNames = files
+                    .filter(Files::isRegularFile)
+                    .filter(Files::isReadable)
+                    .map(f -> f.getFileName().toString())
+                    .collect(Collectors.toSet());
+
+            for (String filesName : fileNames) {
+                stringNotes.add(Files.readAllLines(Path.of(path, filesName)));
+            }
+
+        } catch (IOException e) {
+            FilesManager.registerException(e);
+            return null;
+        }
+
+        List<BaseNote> notes = stringNotes.stream()
+                .map(n -> {
+                    if (n.get(1).equals("Regular Note")) {
+                        BaseNote note = new RegularNote(n.get(0), n.get(n.size() - 1), n.get(1), n.get(3));
+                        note.setCreatedDate(LocalDate.parse(n.get(2)));
+                        return note;
+                    } else if (n.get(1).equals("Deadline Note")) {
+                        BaseNote note = new DeadlineNote(n.get(0), n.get(n.size() - 1), n.get(1), n.get(3), LocalDate.parse(n.get(4)));
+                        note.setCreatedDate(LocalDate.parse(n.get(2)));
+                        return note;
+                    }
+                    return null;
+                })
+                .collect(Collectors.toList());
+        notes.removeIf(Objects::isNull);
+        return FXCollections.observableArrayList(notes);
     }
 }

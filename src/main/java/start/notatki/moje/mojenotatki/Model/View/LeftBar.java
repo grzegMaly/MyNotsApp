@@ -44,6 +44,6 @@ public class LeftBar extends VBox {
     private void loadButtonEvents() {
 
         plusButton.setOnMouseClicked(evt -> mainScene.useMainForm(true));
-        listButton.setOnMouseClicked(evt -> mainScene.useMainForm(true));
+        listButton.setOnMouseClicked(evt -> mainScene.useNotesList(true));
     }
 }

@@ -1,8 +1,10 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
+import start.notatki.moje.mojenotatki.Note.BaseNote;
 
 public class NoteRequestViewModel {
 
@@ -12,10 +14,14 @@ public class NoteRequestViewModel {
     private final StringProperty priority = new SimpleStringProperty("");
     private final StringProperty deadlineDate = new SimpleStringProperty("");
     private final StringProperty content = new SimpleStringProperty("");
-    private Boolean regularNote = true;
+
+    private final SimpleObjectProperty<BaseNote> originalNote = new SimpleObjectProperty<>();
+    private final SimpleObjectProperty<BaseNoteRequest> editedNoteRequest = new SimpleObjectProperty<>();
+
 
     NoteRequestConverter converter = new NoteRequestConverter();
     NoteRequestModel model = new NoteRequestModel();
+
 
     public String getTitle() {
         return title.get();
@@ -34,7 +40,6 @@ public class NoteRequestViewModel {
     }
 
     public StringProperty noteTypeProperty() {
-
         return noteType;
     }
 
@@ -90,9 +95,32 @@ public class NoteRequestViewModel {
         this.content.set(content);
     }
 
+    public BaseNote getOriginalNote() {
+        return originalNote.get();
+    }
+
+    public void setOriginalNote(BaseNote originalNote) {
+        this.originalNote.set(originalNote);
+        this.editedNoteRequest.set(converter.toNoteRequest(originalNote));
+    }
+
+    public BaseNoteRequest getEditedNoteRequest() {
+        return editedNoteRequest.get();
+    }
+
+    public void setEditedNoteRequest(BaseNoteRequest editedNoteRequest) {
+        this.editedNoteRequest.set(editedNoteRequest);
+    }
+
     public void save() {
-        BaseNoteRequest data = converter.toNoteRequest(this, regularNote);
-        if (model.save(data)) {
+        BaseNoteRequest data = converter.toNoteRequest(this);
+        if (model.toSave(data)) {
+            reset();
+        }
+    }
+
+    public void update(BaseNoteRequest data) {
+        if (model.toSave(data)) {
             reset();
         }
     }
@@ -101,9 +129,5 @@ public class NoteRequestViewModel {
 
         this.title.set("");
         this.content.set("");
-    }
-
-    public void isRegularNote(boolean value) {
-        this.regularNote = value;
     }
 }

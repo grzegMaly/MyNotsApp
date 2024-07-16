@@ -1,0 +1,92 @@
+.thisNotesList {
+    -fx-spacing: 20;
+}
+
+.ln-button, .ndd-Button, .ndd-CancelButton {
+    -fx-text-fill: #bbbbbb;
+    -fx-background-color: #484848;
+    -fx-border-color: transparent;
+    -fx-font-family: Helvetica;
+    -fx-border-radius: 5;
+}
+
+.ln-button:hover, .ndd-Button:hover, .ndd-CancelButton:hover {
+    -fx-text-fill: white;
+    -fx-background-color: #747474;
+}
+
+.lnBtnBar {
+    -fx-alignment: top-right;
+    -fx-spacing: 5;
+    -fx-padding: 10;
+    -fx-font-size: 15;
+}
+
+.ndd-Buttons {
+    -fx-spacing: 5;
+}
+
+.ndd-label{
+    -fx-font-size: 15;
+    -fx-text-fill: white;
+    -fx-alignment: center-left;
+}
+
+.ndd-Button, .ndd-CancelButton {
+    -fx-font-size: 15;
+    -fx-text-fill: white;
+}
+
+.ndd-CancelButton {
+    -fx-alignment: bottom-right;
+}
+
+.ndd-VBox {
+    -fx-padding: 10;
+    -fx-background-color: #606060;
+    -fx-spacing: 10;
+}
+
+.ndd-taContent {
+    -fx-control-inner-background: #747474;
+    -fx-text-fill: white;
+    -fx-font-size: 15;
+    -fx-font-family: helvetica;
+    -fx-border-radius: 15;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+}
+
+.ndd-taContent:focused {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.ndd-tfTitle {
+    -fx-control-inner-background: #747474;
+    -fx-text-fill: white;
+}
+
+.ndd-tfTitle:focused {
+    -fx-border-color: #484848;
+    -fx-background-insets: 0;
+    -fx-padding: 5;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+}
+
+.ndd-cbNoteType, .ndd-cbNoteType .list-cell {
+    -fx-background-color: #484848;
+    -fx-text-fill: white;
+    -fx-font-family: Helvetica;
+}
+
+.ndd-cbNoteType .arrow {
+    -fx-background-color: white;
+}
+
+.ndd-cbNoteType:hover, .ndd-cbNoteType .list-cell:hover {
+    -fx-background-color: #747474;
+}

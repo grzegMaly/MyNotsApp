@@ -14,7 +14,7 @@ public class DeadlineNote extends BaseNote {
         public static List<String> getNames() {
             return EnumSet.allOf(Priority.class)
                     .stream()
-                    .map(s -> s.name().charAt(0) + s.name().substring(1).toLowerCase())
+                    .map(BaseNote::convertEnumToString)
                     .collect(Collectors.toList());
         }
     }
@@ -22,9 +22,9 @@ public class DeadlineNote extends BaseNote {
     private Priority priority;
     private LocalDate deadline;
 
-    public DeadlineNote(String title, String content, String noteType, Priority priority, LocalDate deadline) {
+    public DeadlineNote(String title, String content, String noteType, String priority, LocalDate deadline) {
         super(title, content, noteType);
-        this.priority = priority;
+        this.priority = convertStringToEnum(Priority.class, priority);
         this.deadline = deadline;
     }
 
@@ -42,5 +42,10 @@ public class DeadlineNote extends BaseNote {
 
     public void setDeadline(LocalDate deadline) {
         this.deadline = deadline;
+    }
+
+    @Override
+    public String getEnumValueName() {
+        return BaseNote.convertEnumToString(priority);
     }
 }

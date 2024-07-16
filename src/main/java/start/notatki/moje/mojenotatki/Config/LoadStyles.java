@@ -7,14 +7,18 @@ import java.util.Objects;
 public class LoadStyles {
     public static void loadMainStyles(Scene scene) {
 
-
         scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getMainScenePath())).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getStartFormPath())).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getLeftBarPath())).toExternalForm());
         scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getMainFormPath())).toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getListNotesPath())).toExternalForm());
     }
 
     public static void loadCustomDirectoryStyles(Scene scene) {
         scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getCustomDirectoryDialog())).toExternalForm());
+    }
+
+    public static void loadNoteDetailsDialogStyles(Scene scene) {
+        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getListNotesPath())).toExternalForm());
     }
 }

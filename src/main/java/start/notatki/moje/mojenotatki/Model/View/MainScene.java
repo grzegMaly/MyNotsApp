@@ -4,6 +4,7 @@ package start.notatki.moje.mojenotatki.Model.View;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.layout.*;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.MainForm;
+import start.notatki.moje.mojenotatki.Model.View.RightPage.NotesList;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.StartForm;
 
 
@@ -12,6 +13,7 @@ public class MainScene extends HBox {
     private final StartForm startForm = new StartForm();
     private final LeftBar leftBar = new LeftBar(this);
     private final MainForm mainForm = new MainForm(this);
+    private final NotesList notesList = new NotesList(this);
 
     StackPane stackPane = new StackPane();
 
@@ -22,13 +24,21 @@ public class MainScene extends HBox {
         loadStartScene();
         loadLeftBar();
         loadMainForm();
+        loadNotesList();
 
         this.getChildren().addAll(leftBar, stackPane);
     }
 
     public void useMainForm(Boolean value) {
         startForm.setVisible(!value);
+        notesList.setVisible(!value);
         mainForm.setVisible(value);
+    }
+
+    public void useNotesList(Boolean value) {
+        notesList.setVisible(value);
+        startForm.setVisible(!value);
+        mainForm.setVisible(!value);
     }
 
 
@@ -45,8 +55,7 @@ public class MainScene extends HBox {
         leftBar.minWidthProperty().bind(availableWidth.multiply(0.25));
         startForm.minWidthProperty().bind(availableWidth.multiply(0.75));
 
-        mainForm.setVisible(false);
-        stackPane.getChildren().addAll(startForm, mainForm);
+        stackPane.getChildren().addAll(notesList, mainForm, startForm);
     }
 
     private void loadLeftBar() {
@@ -59,5 +68,12 @@ public class MainScene extends HBox {
         mainForm.getStyleClass().add("main-form");
         mainForm.minWidthProperty().bind(startForm.minWidthProperty());
         mainForm.minHeightProperty().bind(startForm.minHeightProperty());
+    }
+
+    public void loadNotesList() {
+
+        notesList.getStyleClass().add("main-form");
+        notesList.minWidthProperty().bind(mainForm.minWidthProperty());
+        notesList.minHeightProperty().bind(mainForm.minHeightProperty());
     }
 }

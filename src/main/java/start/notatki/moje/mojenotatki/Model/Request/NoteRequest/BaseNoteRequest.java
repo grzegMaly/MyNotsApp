@@ -5,9 +5,10 @@ import start.notatki.moje.mojenotatki.Note.BaseNote;
 
 public abstract class BaseNoteRequest {
 
-    private final String title;
-    private final String noteType;
-    private final String content;
+    private String title;
+    private String noteType;
+    private String content;
+    protected BaseNote note = null;
 
     public BaseNoteRequest(String title, String noteType, String content) {
         this.title = title;
@@ -19,12 +20,32 @@ public abstract class BaseNoteRequest {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getNoteType() {
         return noteType;
     }
 
+    public void setNoteType(String noteType) {
+        this.noteType = noteType;
+    }
+
     public String getContent() {
         return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public BaseNote getOriginalInstance() {
+        return note;
+    }
+
+    public void setNote(BaseNote note) {
+        this.note = note;
     }
 
     public abstract BaseNote getNote();

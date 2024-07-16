@@ -1,13 +1,14 @@
 package start.notatki.moje.mojenotatki.Model.Request.NoteRequest;
 
+import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 
 import java.time.LocalDate;
 
 public class DeadlineNoteRequest extends BaseNoteRequest {
 
-    private final String priority;
-    private final String deadline;
+    private String priority;
+    private String deadline;
 
     public DeadlineNoteRequest(String title, String noteType, String content, String priority, String deadline) {
         super(title, noteType, content);
@@ -19,17 +20,26 @@ public class DeadlineNoteRequest extends BaseNoteRequest {
         return priority;
     }
 
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
     public String getDeadline() {
         return deadline;
     }
 
+    public void setDeadline(String deadline) {
+        this.deadline = deadline;
+    }
+
     @Override
     public DeadlineNote getNote() {
+
         return new DeadlineNote(
                 this.getTitle(),
                 this.getContent(),
                 this.getNoteType(),
-                DeadlineNote.Priority.valueOf(priority.toUpperCase()),
+                priority,
                 LocalDate.parse(deadline)
         );
     }

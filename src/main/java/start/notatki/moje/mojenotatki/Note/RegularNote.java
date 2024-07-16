@@ -11,16 +11,16 @@ public class RegularNote extends BaseNote {
 
         public static List<String> getNames() {
             return Arrays.stream(values())
-                    .map(s -> s.name().charAt(0) + s.name().substring(1).toLowerCase())
+                    .map(BaseNote::convertEnumToString)
                     .collect(Collectors.toList());
         }
     }
 
     private Category category;
 
-    public RegularNote(String title, String content, String noteType, Category category) {
+    public RegularNote(String title, String content, String noteType, String category) {
         super(title, content, noteType);
-        this.category = category;
+        this.category = convertStringToEnum(Category.class, category);
     }
 
     public Category getCategory() {
@@ -29,5 +29,10 @@ public class RegularNote extends BaseNote {
 
     public void setCategory(String category) {
         this.category = Category.valueOf(category);
+    }
+
+    @Override
+    public String getEnumValueName() {
+        return BaseNote.convertEnumToString(category);
     }
 }

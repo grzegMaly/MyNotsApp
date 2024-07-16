@@ -45,6 +45,10 @@ public class BaseConfig {
         return getProperty("startForm");
     }
 
+    public static String getListNotesPath() {
+        return getProperty("listNotes");
+    }
+
     public static String getCustomDirectoryDialog() {
         return getProperty("customDirectoryDialog");
     }

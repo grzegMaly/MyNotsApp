@@ -10,14 +10,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
+import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainForm extends GridPane {
 
@@ -68,12 +67,11 @@ public class MainForm extends GridPane {
 
     private ComboBox<String> initializeType() {
 
-        String TYPE = "Regular Note";
+        ObservableList<String> types = FXCollections.observableArrayList(BaseNote.NoteType.getNames());
 
         ComboBox<String> temp = new ComboBox<>();
-        temp.getItems().add(TYPE);
-        temp.getItems().add("Plan Note");
-        temp.setValue(TYPE);
+        temp.getItems().addAll(types);
+        temp.setValue(types.get(0));
 
         return temp;
     }
@@ -240,9 +238,9 @@ public class MainForm extends GridPane {
     private void manageComboBoxes() {
 
         cbType.setOnAction(evt -> {
-            if (cbType.getValue().equals("Regular Note")) {
+            if (cbType.getValue().equals(BaseNote.NoteType.REGULAR_NOTE.getName())) {
                 deadlineVisibility(true);
-            } else if (cbType.getValue().equals("Plan Note")) {
+            } else if (cbType.getValue().equals(BaseNote.NoteType.DEADLINE_NOTE.getName())) {
                 deadlineVisibility(false);
             }
         });
@@ -263,10 +261,6 @@ public class MainForm extends GridPane {
         viewModel.categoryProperty().bindBidirectional(cbCategory.valueProperty());
         viewModel.priorityProperty().bindBidirectional(cbPriorities.valueProperty());
 
-        viewModel.noteTypeProperty().addListener((obs, o, n) -> {
-            viewModel.isRegularNote(n.equals("Regular Note"));
-        });
-
         DateTimeFormatter saveFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         if (viewModel.deadlineDateProperty().get() == null || viewModel.deadlineDateProperty().get().isEmpty()) {
@@ -281,17 +275,7 @@ public class MainForm extends GridPane {
                 viewModel.setDeadlineDate(saveDate);
             }
         });
-
-        viewModel.deadlineDateProperty().addListener((obs2, oldVal, newString) -> {
-            if (newString != null && !newString.isEmpty()) {
-                LocalDate date = LocalDate.parse(newString, saveFormatter);
-                datePicker.setValue(date);
-            } else {
-                datePicker.setValue(LocalDate.now());
-            }
-        });
     }
-
 
     private void save(ActionEvent e) {
 
@@ -316,12 +300,12 @@ public class MainForm extends GridPane {
             flag = false;
         }
 
-        if (cbType.getValue().equals("Regular Note")) {
+        if (cbType.getValue().equals(BaseNote.NoteType.REGULAR_NOTE.getName())) {
             if (cbCategory.getValue().equals("Category")) {
                 cbCategory.getStyleClass().add("badElement");
                 flag = false;
             }
-        } else if (cbType.getValue().equals("Plan Note")) {
+        } else if (cbType.getValue().equals(BaseNote.NoteType.DEADLINE_NOTE.getName())) {
             if (cbPriorities.getValue().equals("Priority")) {
                 cbPriorities.getStyleClass().add("badElement");
                 flag = false;
