@@ -4,19 +4,18 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import start.notatki.moje.mojenotatki.Config.FilesManager;
+import start.notatki.moje.mojenotatki.Model.Request.NoteRequestModel;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+import start.notatki.moje.mojenotatki.MyNotesApp;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.NoteDetailsDialog;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class NotesList extends VBox {
 
@@ -32,16 +31,23 @@ public class NotesList extends VBox {
     private final TableColumn<BaseNote, String> colCategoryPriority = new TableColumn<>("Category/Priority");
     private final TableColumn<BaseNote, String> colDeadline = new TableColumn<>("Deadline");
 
+    private boolean loaded = false;
+    private NoteRequestModel model = new NoteRequestModel();
 
     public NotesList(MainScene mainScene) {
 
         this.getStyleClass().add("thisNotesList");
-
         this.mainScene = mainScene;
-        loadTableView();
-        loadNotes();
-        loadElements();
-        this.getChildren().addAll(btnBar, tblNotes);
+    }
+
+    public void reload() {
+        if (FilesManager.checkNotesDirectoryExistence() && !loaded) {
+            this.getChildren().addAll(btnBar, tblNotes);
+            loadElements();
+            loadTableView();
+            loadNotes();
+            loaded = true;
+        }
     }
 
     private void loadElements() {
@@ -62,19 +68,37 @@ public class NotesList extends VBox {
         tblNotes.setRowFactory(evt -> {
             TableRow<BaseNote> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && (!row.isEmpty())) {
                     BaseNote rowData = row.getItem();
                     NoteDetailsDialog.getInstance().show(rowData, this);
+                }
+                else if (event.getButton() == MouseButton.SECONDARY && (!row.isEmpty())) {
+                    showContextMenu(row, event.getScreenX(), event.getScreenY());
                 }
             });
             return row;
         });
     }
 
+    private void showContextMenu(TableRow<BaseNote> row, double sceneX, double sceneY) {
+
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem deleteItem = new MenuItem("Delete");
+
+        deleteItem.setOnAction(evt -> {
+            BaseNote note = row.getItem();
+            notes.remove(note);
+            tblNotes.getItems().remove(note);
+            model.deleteFile(note);
+        });
+
+        contextMenu.getItems().add(deleteItem);
+        contextMenu.show(row, sceneX, sceneY);
+    }
+
     private void loadNotes() {
 
         notes = FilesManager.loadNotes();
-        assert notes != null;
         tblNotes.getItems().addAll(notes);
     }
 

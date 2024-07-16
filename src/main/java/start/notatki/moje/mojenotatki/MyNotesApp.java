@@ -31,7 +31,14 @@ public class MyNotesApp extends Application {
         stage.setResizable(false);
         stage.setTitle("Your Favorite Notes");
 
-        stage.setOnShowing(event -> checkOrSetOutputDirectory());
+        stage.setOnShowing(event -> {
+
+            if (FilesManager.checkNotesDirectoryExistence()) {
+                return;
+            }
+
+            checkOrSetOutputDirectory();
+        });
         stage.show();
     }
 
@@ -63,10 +70,6 @@ public class MyNotesApp extends Application {
     }
 
     public static void checkOrSetOutputDirectory() {
-
-        if (FilesManager.checkNotesDirectoryExistence()) {
-            return;
-        }
 
         CustomDirectoryDialog dialog = new CustomDirectoryDialog(stage);
         dialog.setTitle("Choosing Directory");

@@ -29,6 +29,10 @@ public class MainScene extends HBox {
         this.getChildren().addAll(leftBar, stackPane);
     }
 
+    public NotesList getNotesList() {
+        return notesList;
+    }
+
     public void useMainForm(Boolean value) {
         startForm.setVisible(!value);
         notesList.setVisible(!value);

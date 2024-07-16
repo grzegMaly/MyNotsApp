@@ -1,6 +1,5 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
-import javafx.util.Pair;
 import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineNoteRequest;
@@ -9,22 +8,30 @@ import start.notatki.moje.mojenotatki.MyNotesApp;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 public class NoteRequestModel {
 
     private final StringBuilder sb = new StringBuilder();
     private Path path;
     private BaseNote note;
+    private String extension = ".txt";
 
     public boolean toSave(BaseNoteRequest req) {
 
+        if (!FilesManager.checkNotesDirectoryExistence()) {
+            MyNotesApp.checkOrSetOutputDirectory();
+        }
+
+        if (!FilesManager.checkNotesDirectoryExistence()) {
+            return false;
+        }
+
         note = req.getOriginalInstance();
-        String extension = ".txt";
 
         if (note != null) {
             if (note.getTitle().equals(req.getTitle())) {
@@ -36,24 +43,15 @@ public class NoteRequestModel {
             convertContent(req, note);
         } else {
             path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
+            convertContent(req, null);
         }
-
-        convertContent(req, null);
         return save(path);
     }
 
     private boolean save(Path path) {
 
-        if (!FilesManager.checkNotesDirectoryExistence()) {
-            MyNotesApp.checkOrSetOutputDirectory();
-            System.out.println(FilesManager.checkNotesDirectoryExistence());
-        }
-
-        if (!FilesManager.checkNotesDirectoryExistence()) {
-            return false;
-        }
-
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.CREATE)) {
             writer.write(sb.toString());
         } catch (IOException e) {
             FilesManager.registerException(e);
@@ -61,6 +59,12 @@ public class NoteRequestModel {
 
         sb.setLength(0);
         return true;
+    }
+
+    public void deleteFile(BaseNote note) {
+        String title = note.getTitle() + extension;
+        Path path = Paths.get(FilesManager.getSaveNotesPath(), title);
+        deleteFile(path);
     }
 
     private void deleteFile(Path path) {
@@ -90,6 +94,7 @@ public class NoteRequestModel {
         }
 
         sb.append("\n");
+        sb.append("Content:\n");
         sb.append(req.getContent());
     }
 }

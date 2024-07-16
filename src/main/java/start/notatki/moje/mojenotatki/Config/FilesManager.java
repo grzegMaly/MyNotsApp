@@ -144,39 +144,52 @@ public class FilesManager {
     public static ObservableList<BaseNote> loadNotes() {
 
         String path = getSaveNotesPath();
-        List<List<String>> stringNotes = new ArrayList<>();
+        List<BaseNote> notes = new ArrayList<>();
 
         try (Stream<Path> files = Files.list(Path.of(path))) {
 
-            Set<String> fileNames = files
+            List<Path> filePaths = files
                     .filter(Files::isRegularFile)
                     .filter(Files::isReadable)
-                    .map(f -> f.getFileName().toString())
-                    .collect(Collectors.toSet());
+                    .toList();
 
-            for (String filesName : fileNames) {
-                stringNotes.add(Files.readAllLines(Path.of(path, filesName)));
+            for (Path filePath : filePaths) {
+                try (BufferedReader reader = Files.newBufferedReader(filePath)) {
+                    String title = reader.readLine();
+                    String noteType = reader.readLine();
+                    LocalDate createdDate = LocalDate.parse(reader.readLine());
+                    String categoryPriority = reader.readLine();
+                    LocalDate deadline = noteType.equals("Deadline Note") ? LocalDate.parse(reader.readLine()) : null;
+
+                    StringBuilder contentBuilder = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.equals("Content:")) {
+                            break;
+                        }
+                    }
+                    while ((line = reader.readLine()) != null) {
+                        contentBuilder.append(line).append(System.lineSeparator());
+                    }
+
+                    String content = contentBuilder.toString().trim();
+
+                    if (noteType.equals("Regular Note")) {
+                        BaseNote note = new RegularNote(title, content, noteType, categoryPriority);
+                        note.setCreatedDate(createdDate);
+                        notes.add(note);
+                    } else if (noteType.equals("Deadline Note")) {
+                        BaseNote note = new DeadlineNote(title, content, noteType, categoryPriority, deadline);
+                        note.setCreatedDate(createdDate);
+                        notes.add(note);
+                    }
+                }
             }
 
         } catch (IOException e) {
             FilesManager.registerException(e);
             return null;
         }
-
-        List<BaseNote> notes = stringNotes.stream()
-                .map(n -> {
-                    if (n.get(1).equals("Regular Note")) {
-                        BaseNote note = new RegularNote(n.get(0), n.get(n.size() - 1), n.get(1), n.get(3));
-                        note.setCreatedDate(LocalDate.parse(n.get(2)));
-                        return note;
-                    } else if (n.get(1).equals("Deadline Note")) {
-                        BaseNote note = new DeadlineNote(n.get(0), n.get(n.size() - 1), n.get(1), n.get(3), LocalDate.parse(n.get(4)));
-                        note.setCreatedDate(LocalDate.parse(n.get(2)));
-                        return note;
-                    }
-                    return null;
-                })
-                .collect(Collectors.toList());
         notes.removeIf(Objects::isNull);
         return FXCollections.observableArrayList(notes);
     }
