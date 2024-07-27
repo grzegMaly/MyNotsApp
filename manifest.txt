@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: start.notatki.moje.mojenotatki.MyNotesApp
-SplashScreen-Image: /icon/icon.png

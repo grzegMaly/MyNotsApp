@@ -4,8 +4,8 @@ import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.RegularNoteRequest;
-import start.notatki.moje.mojenotatki.MyNotesApp;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
+import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,21 +13,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class NoteRequestModel {
 
-    private final StringBuilder sb = new StringBuilder();
     private Path path;
     private BaseNote note;
-    private String extension = ".txt";
+    private final String extension = ".txt";
+    private final StringBuilder sb = new StringBuilder();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public boolean toSave(BaseNoteRequest req) {
 
-        if (!FilesManager.checkNotesDirectoryExistence()) {
-            MyNotesApp.checkOrSetOutputDirectory();
+        Future<Boolean> future = executor.submit(() -> {
+            DirectoryUtils.checkOrSetOutputDirectory();
+            return FilesManager.checkNotesDirectoryExistence();
+        });
+
+        boolean directoryExists;
+        try {
+            directoryExists = future.get();
+        } catch (ExecutionException | InterruptedException e) {
+            FilesManager.registerException(e);
+            return false;
         }
 
-        if (!FilesManager.checkNotesDirectoryExistence()) {
+        if (!directoryExists) {
             return false;
         }
 

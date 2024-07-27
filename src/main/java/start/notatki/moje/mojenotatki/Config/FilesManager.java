@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FilesManager {
@@ -120,6 +119,21 @@ public class FilesManager {
             Files.createDirectories(Path.of(value));
         } catch (IOException e) {
             FilesManager.registerException(e);
+        }
+    }
+
+    public static void log(String exc) {
+
+        String logsDir = getProperty("logs.dir");
+        String logsFile = getProperty("logs.fileName");
+
+        Path path = getPath(logsDir, logsFile);
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
+            writer.write("Info: " + exc);
+            writer.newLine();
+        } catch (IOException e) {
+            //Ignore
         }
     }
 

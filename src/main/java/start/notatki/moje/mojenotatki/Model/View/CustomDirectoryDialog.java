@@ -1,4 +1,4 @@
-package start.notatki.moje.mojenotatki;
+package start.notatki.moje.mojenotatki.Model.View;
 
 import javafx.scene.Scene;
 import javafx.scene.control.*;

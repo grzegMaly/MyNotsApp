@@ -1,10 +1,13 @@
 package start.notatki.moje.mojenotatki.Config;
 
-import java.io.BufferedWriter;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
+
+import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.URL;
+import java.util.Objects;
 import java.util.Properties;
 
 public class BaseConfig {
@@ -51,5 +54,32 @@ public class BaseConfig {
 
     public static String getCustomDirectoryDialog() {
         return getProperty("customDirectoryDialog");
+    }
+
+    public static void checkOrSetOutputDirectory(Stage stage) {
+
+    }
+
+    public static Image getIcon() {
+
+        String iconPath = getIconPath();
+        Image image = null;
+
+        try {
+
+            URL resource = BaseConfig.class.getResource(iconPath);
+            if (resource == null) {
+                throw new IllegalAccessException("Icon resource not found: " + iconPath);
+            }
+            image = new Image(resource.toExternalForm());
+        } catch (IllegalStateException | NullPointerException exc) {
+            FilesManager.registerException(exc);
+            System.err.println("Error loading icon: " + iconPath);
+        } catch (Exception exc) {
+            FilesManager.registerException(exc);
+            System.err.println("Unexpected error loading icon: " + iconPath);
+        }
+
+        return image;
     }
 }

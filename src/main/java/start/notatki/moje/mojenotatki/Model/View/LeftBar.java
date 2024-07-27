@@ -4,7 +4,7 @@ package start.notatki.moje.mojenotatki.Model.View;
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
-import start.notatki.moje.mojenotatki.MyNotesApp;
+import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
 
 
 public class LeftBar extends VBox {
@@ -52,6 +52,6 @@ public class LeftBar extends VBox {
             mainScene.useNotesList(true);
             mainScene.getNotesList().reload();
         });
-        notedDirectory.setOnMouseClicked(evt -> MyNotesApp.checkOrSetOutputDirectory());
+        notedDirectory.setOnMouseClicked(evt -> DirectoryUtils.checkOrSetOutputDirectory());
     }
 }

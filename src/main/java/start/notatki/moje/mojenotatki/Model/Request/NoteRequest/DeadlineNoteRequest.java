@@ -1,6 +1,5 @@
 package start.notatki.moje.mojenotatki.Model.Request.NoteRequest;
 
-import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 
 import java.time.LocalDate;

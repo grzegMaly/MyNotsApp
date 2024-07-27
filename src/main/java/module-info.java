@@ -4,6 +4,7 @@ module start.notatki.moje.mojenotatki {
     requires java.desktop;
     requires jdk.compiler;
     requires java.sql;
+    requires javafx.graphics;
 
     opens start.notatki.moje.mojenotatki.Note to javafx.base;
     exports start.notatki.moje.mojenotatki to javafx.graphics;
