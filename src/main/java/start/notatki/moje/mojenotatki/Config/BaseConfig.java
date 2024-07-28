@@ -1,13 +1,10 @@
 package start.notatki.moje.mojenotatki.Config;
 
 import javafx.scene.image.Image;
-import javafx.stage.Stage;
 
-import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Objects;
 import java.util.Properties;
 
 public class BaseConfig {
@@ -54,10 +51,6 @@ public class BaseConfig {
 
     public static String getCustomDirectoryDialog() {
         return getProperty("customDirectoryDialog");
-    }
-
-    public static void checkOrSetOutputDirectory(Stage stage) {
-
     }
 
     public static Image getIcon() {

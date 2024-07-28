@@ -10,14 +10,17 @@ import javafx.stage.Stage;
 import start.notatki.moje.mojenotatki.Config.BaseConfig;
 import start.notatki.moje.mojenotatki.Config.LoadStyles;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+import start.notatki.moje.mojenotatki.utils.CustomAlert;
 import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
+import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
 import java.util.concurrent.*;
 
 public class MyNotesApp extends Application {
 
     private static Stage primaryStage;
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor =
+            ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
 
     public static void main(String[] args) {
         launch(args);
@@ -73,10 +76,7 @@ public class MyNotesApp extends Application {
 
     private void showErrorDialog() {
 
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Application Had Problem to Run");
-
+        Alert alert = new CustomAlert("Application Had Problem to Run");
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 Platform.exit();
@@ -86,6 +86,7 @@ public class MyNotesApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        executor.shutdown();
+        ExecutorServiceManager.shutdownAll();
+        super.stop();
     }
 }

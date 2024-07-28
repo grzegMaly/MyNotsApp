@@ -1,11 +1,15 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.DeadlineNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.RegularNoteRequest;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
+import start.notatki.moje.mojenotatki.utils.CustomAlert;
 import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
+import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,10 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class NoteRequestModel {
 
@@ -24,42 +25,94 @@ public class NoteRequestModel {
     private BaseNote note;
     private final String extension = ".txt";
     private final StringBuilder sb = new StringBuilder();
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
+    private final CountDownLatch latch = new CountDownLatch(1);
 
-    public boolean toSave(BaseNoteRequest req) {
+    private boolean checkOrSetDirectory() {
 
         Future<Boolean> future = executor.submit(() -> {
             DirectoryUtils.checkOrSetOutputDirectory();
             return FilesManager.checkNotesDirectoryExistence();
         });
 
-        boolean directoryExists;
         try {
-            directoryExists = future.get();
+            return future.get();
         } catch (ExecutionException | InterruptedException e) {
             FilesManager.registerException(e);
             return false;
         }
+    }
 
-        if (!directoryExists) {
+    public boolean toSave(BaseNoteRequest req) {
+
+        note = req.getOriginalInstance();
+
+        if (!checkOrSetDirectory()) {
             return false;
         }
 
         note = req.getOriginalInstance();
 
+        if (!handleRenameIfNeeded(req)) {
+            return false;
+        }
+
+        return handleSave(req);
+    }
+
+    private boolean handleRenameIfNeeded(BaseNoteRequest req) {
+
         if (note != null) {
             if (note.getTitle().equals(req.getTitle())) {
                 path = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
             } else {
+                Path oldPath = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
                 path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
-                deleteFile(Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension));
+                Future<Boolean> renameFuture = executor.submit(() -> renameFile(oldPath, path));
+                return getFutureResult(renameFuture);
             }
-            convertContent(req, note);
         } else {
             path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
-            convertContent(req, null);
         }
-        return save(path);
+
+        return true;
+    }
+
+    private boolean renameFile(Path oldPath, Path newPath) {
+        try {
+            Files.move(oldPath, newPath);
+            return true;
+        } catch (IOException e) {
+            FilesManager.registerException(e);
+            Platform.runLater(() -> showErrorDialog("Failed to rename the file."));
+            return false;
+        }
+    }
+
+    private boolean handleSave(BaseNoteRequest req) {
+
+        Future<Void> convertFuture = executor.submit(() -> {
+            synchronized (sb) {
+                convertContent(req, note);
+                latch.countDown();
+            }
+
+            return null;
+        });
+
+        Future<Boolean> saveFuture = executor.submit(() -> {
+            try {
+                latch.await();
+                synchronized (sb) {
+                    return save(path);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        });
+
+        return getFutureResult(convertFuture) && getFutureResult(saveFuture);
     }
 
     private boolean save(Path path) {
@@ -69,6 +122,8 @@ public class NoteRequestModel {
             writer.write(sb.toString());
         } catch (IOException e) {
             FilesManager.registerException(e);
+            Platform.runLater(() -> showErrorDialog("Failed to save the file."));
+            return false;
         }
 
         sb.setLength(0);
@@ -86,6 +141,16 @@ public class NoteRequestModel {
             Files.delete(path);
         } catch (IOException e) {
             FilesManager.registerException(e);
+        }
+    }
+
+    private boolean getFutureResult(Future<?> future) {
+        try {
+            future.get();
+            return true;
+        } catch (ExecutionException | InterruptedException e) {
+            FilesManager.registerException(e);
+            return false;
         }
     }
 
@@ -110,5 +175,10 @@ public class NoteRequestModel {
         sb.append("\n");
         sb.append("Content:\n");
         sb.append(req.getContent());
+    }
+
+    private void showErrorDialog(String message) {
+        Alert alert = new CustomAlert(message);
+        alert.showAndWait();
     }
 }
