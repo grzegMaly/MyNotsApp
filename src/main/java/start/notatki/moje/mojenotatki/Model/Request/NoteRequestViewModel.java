@@ -1,8 +1,10 @@
 package start.notatki.moje.mojenotatki.Model.Request;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 
@@ -114,15 +116,27 @@ public class NoteRequestViewModel {
 
     public void save() {
         BaseNoteRequest data = converter.toNoteRequest(this);
-        if (model.toSave(data)) {
-            reset();
-        }
+
+        model.toSave(data).thenAccept(result -> {
+            if (result) {
+                Platform.runLater(this::reset);
+            }
+        }).exceptionally(ex -> {
+            FilesManager.registerException((Exception) ex);
+            return null;
+        });
     }
 
     public void update(BaseNoteRequest data) {
-        if (model.toSave(data)) {
-            reset();
-        }
+
+        model.toSave(data).thenAccept(result -> {
+            if (result) {
+                Platform.runLater(this::reset);
+            }
+        }).exceptionally(ex -> {
+            FilesManager.registerException((Exception) ex);
+            return null;
+        });
     }
 
     public void reset() {

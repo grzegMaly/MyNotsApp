@@ -1,5 +1,6 @@
 package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,19 +10,31 @@ import javafx.geometry.VPos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
+import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
+import start.notatki.moje.mojenotatki.Model.View.Page;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
-public class MainForm extends GridPane {
+public class MainForm extends GridPane implements Page {
+
+    private final ExecutorService executor =
+            ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
 
     private final GridPane gp = new GridPane();
-
 
     private final ButtonBar btnBar = new ButtonBar();
     private final Button btnSave = new Button("Save");
@@ -47,22 +60,68 @@ public class MainForm extends GridPane {
 
     private final MainScene mainScene;
 
-
     public MainForm(MainScene mainScene) {
 
         this.mainScene = mainScene;
+    }
 
-        initialCheckBoxes();
-        initialDatePicker();
-        loadForm();
-        bindViewModel();
+    @Override
+    public void loadPage() {
+        Future<Void> initialCheckBoxesFuture = executor.submit(() -> {
+            initialCheckBoxes();
+            return null;
+        });
+
+        Future<Void> initialDatePickerFuture = executor.submit(() -> {
+            initialDatePicker();
+            return null;
+        });
+
+        try {
+            initialCheckBoxesFuture.get();
+            initialDatePickerFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            FilesManager.registerException(e);
+            return;
+        }
+
+        Platform.runLater(() -> {
+            loadForm();
+            bindViewModel();
+        });
     }
 
     private void initialCheckBoxes() {
 
-        cbType = initializeType();
-        cbCategory = initializeCategories();
-        cbPriorities = initializeNotePriorities();
+        List<Callable<Void>> tasks = List.of(
+                () -> {
+                    cbType = initializeType();
+                    return null;
+                },
+                () -> {
+                    cbCategory = initializeCategories();
+                    return null;
+                },
+                () -> {
+                    cbPriorities = initializeNotePriorities();
+                    return null;
+                }
+        );
+
+        try {
+            List<Future<Void>> results = executor.invokeAll(tasks);
+            for (Future<Void> result : results) {
+                result.get();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            FilesManager.registerException(e);
+            Thread.currentThread().interrupt();
+        }
+
+        Platform.runLater(() -> {
+            boxes.getChildren().addAll(cbPriorities, cbCategory);
+            completeGridPane();
+        });
     }
 
     private ComboBox<String> initializeType() {
@@ -126,11 +185,9 @@ public class MainForm extends GridPane {
         this.getStyleClass().add("thisMainForm");
         this.getChildren().add(gp);
 
-        boxes.getChildren().addAll(cbPriorities, cbCategory);
 
         styleAndLoadButtons();
         styleOtherElements();
-        completeGridPane();
         deadlineVisibility(true);
     }
 
@@ -298,6 +355,13 @@ public class MainForm extends GridPane {
         if (tfTitle.getText().isEmpty() || tfTitle.getText().isBlank()) {
             tfTitle.getStyleClass().add("badElement");
             flag = false;
+        } else {
+
+            Path path = Path.of(FilesManager.getSaveNotesPath(), tfTitle.getText() + ".txt");
+            if (Files.exists(path)) {
+                tfTitle.getStyleClass().add("badElement");
+                flag = false;
+            }
         }
 
         if (cbType.getValue().equals(BaseNote.NoteType.REGULAR_NOTE.getName())) {
@@ -319,6 +383,12 @@ public class MainForm extends GridPane {
         tfTitle.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.isEmpty() && !newValue.isBlank()) {
                 tfTitle.getStyleClass().remove("badElement");
+            } else {
+
+                Path path = Path.of(FilesManager.getSaveNotesPath(), newValue, ".txt");
+                if (!Files.exists(path)) {
+                    tfTitle.getStyleClass().remove("badElement");
+                }
             }
         });
 

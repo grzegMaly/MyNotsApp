@@ -9,12 +9,6 @@ public class LoadStyles {
 
     public static boolean loadMainStyles(Scene scene) {
 
-        /*scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getMainScenePath())).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getStartFormPath())).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getLeftBarPath())).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getMainFormPath())).toExternalForm());
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getListNotesPath())).toExternalForm());
-*/
         return addStyleSheets(scene, BaseConfig.getMainScenePath())
                 && addStyleSheets(scene, BaseConfig.getStartFormPath())
                 && addStyleSheets(scene, BaseConfig.getLeftBarPath())
@@ -22,12 +16,12 @@ public class LoadStyles {
                 && addStyleSheets(scene, BaseConfig.getListNotesPath());
     }
 
-    public static void loadCustomDirectoryStyles(Scene scene) {
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getCustomDirectoryDialog())).toExternalForm());
+    public static boolean loadCustomDirectoryStyles(Scene scene) {
+        return addStyleSheets(scene, BaseConfig.getCustomDirectoryDialog());
     }
 
-    public static void loadNoteDetailsDialogStyles(Scene scene) {
-        scene.getStylesheets().add(Objects.requireNonNull(LoadStyles.class.getResource(BaseConfig.getListNotesPath())).toExternalForm());
+    public static boolean loadNoteDetailsDialogStyles(Scene scene) {
+        return addStyleSheets(scene, BaseConfig.getListNotesPath());
     }
 
     private static boolean addStyleSheets(Scene scene, String path) {

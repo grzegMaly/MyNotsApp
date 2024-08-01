@@ -3,28 +3,71 @@ package start.notatki.moje.mojenotatki.Model.View;
 
 import javafx.beans.binding.DoubleBinding;
 import javafx.scene.layout.*;
+import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.MainForm;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.NotesList;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.StartForm;
+import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 
-public class MainScene extends HBox {
+public class MainScene extends HBox implements Page {
 
     private final StartForm startForm = new StartForm();
     private final LeftBar leftBar = new LeftBar(this);
     private final MainForm mainForm = new MainForm(this);
     private final NotesList notesList = new NotesList(this);
+    private final ExecutorService executor =
+            ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
 
     StackPane stackPane = new StackPane();
 
     public MainScene() {
+    }
 
-        this.getStyleClass().add("main-scene");
+    @Override
+    public void loadPage() {
 
-        loadStartScene();
-        loadLeftBar();
-        loadMainForm();
-        loadNotesList();
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch restLatch = new CountDownLatch(1);
+
+        executor.submit(() -> {
+            this.getStyleClass().add("main-scene");
+            startLatch.countDown();
+        });
+
+        try {
+            startLatch.await();
+
+            Future<?> leftBarFuture = executor.submit(this::loadLeftBar);
+            Future<?> startSceneFuture = executor.submit(this::loadStartScene);
+
+            leftBarFuture.get();
+            startSceneFuture.get();
+            restLatch.countDown();
+
+        } catch (InterruptedException | ExecutionException e) {
+            FilesManager.registerException(e);
+            Thread.currentThread().interrupt();
+        }
+
+        try {
+            restLatch.await();
+
+            Future<?> mainFormFuture = executor.submit(this::loadMainForm);
+            Future<?> notesListFuture = executor.submit(this::loadNotesList);
+
+            mainFormFuture.get();
+            notesListFuture.get();
+
+        } catch (InterruptedException | ExecutionException e) {
+            FilesManager.registerException(e);
+            Thread.currentThread().interrupt();
+        }
 
         this.getChildren().addAll(leftBar, stackPane);
     }
@@ -34,17 +77,23 @@ public class MainScene extends HBox {
     }
 
     public void useMainForm(Boolean value) {
+
         startForm.setVisible(!value);
         notesList.setVisible(!value);
         mainForm.setVisible(value);
     }
 
     public void useNotesList(Boolean value) {
-        notesList.setVisible(value);
+
         startForm.setVisible(!value);
         mainForm.setVisible(!value);
+        notesList.setVisible(value);
     }
 
+    private void loadLeftBar() {
+
+        leftBar.getStyleClass().add("left-bar");
+    }
 
     private void loadStartScene() {
 
@@ -62,14 +111,10 @@ public class MainScene extends HBox {
         stackPane.getChildren().addAll(notesList, mainForm, startForm);
     }
 
-    private void loadLeftBar() {
-
-        leftBar.getStyleClass().add("left-bar");
-    }
-
     public void loadMainForm() {
 
         mainForm.getStyleClass().add("main-form");
+        mainForm.loadPage();
         mainForm.minWidthProperty().bind(startForm.minWidthProperty());
         mainForm.minHeightProperty().bind(startForm.minHeightProperty());
     }
@@ -77,6 +122,7 @@ public class MainScene extends HBox {
     public void loadNotesList() {
 
         notesList.getStyleClass().add("main-form");
+        notesList.loadPage();
         notesList.minWidthProperty().bind(mainForm.minWidthProperty());
         notesList.minHeightProperty().bind(mainForm.minHeightProperty());
     }

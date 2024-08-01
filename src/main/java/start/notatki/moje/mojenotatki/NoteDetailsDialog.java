@@ -11,6 +11,7 @@ import start.notatki.moje.mojenotatki.Config.LoadStyles;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequest.BaseNoteRequest;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestConverter;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestViewModel;
+import start.notatki.moje.mojenotatki.Model.View.Page;
 import start.notatki.moje.mojenotatki.Model.View.RightPage.NotesList;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
@@ -19,7 +20,7 @@ import start.notatki.moje.mojenotatki.Note.RegularNote;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class NoteDetailsDialog extends Stage {
+public class NoteDetailsDialog extends Stage implements Page {
 
     private VBox vBox;
 
@@ -64,8 +65,18 @@ public class NoteDetailsDialog extends Stage {
     private NotesList notesList;
     private NoteRequestViewModel viewModel;
     private BaseNote note;
+    private boolean loaded = false;
 
     private NoteDetailsDialog() {
+
+    }
+
+    public static NoteDetailsDialog getInstance() {
+        return dialog;
+    }
+
+    @Override
+    public void loadPage() {
 
         initializeComponents();
         Scene scene = new Scene(vBox);
@@ -73,10 +84,6 @@ public class NoteDetailsDialog extends Stage {
         this.setScene(scene);
         this.setResizable(false);
         this.setTitle("Note Details");
-    }
-
-    public static NoteDetailsDialog getInstance() {
-        return dialog;
     }
 
     public void setNote(BaseNote note) {
@@ -177,17 +184,11 @@ public class NoteDetailsDialog extends Stage {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         buttons.getChildren().addAll(editButton, saveButton, spacer, cancelButton);
 
-        editButton.setOnAction(evt -> {
-            editVisibility(true);
-        });
+        editButton.setOnAction(evt -> editVisibility(true));
 
-        saveButton.setOnAction(evt -> {
-            saveChanges();
-        });
+        saveButton.setOnAction(evt -> saveChanges());
 
-        cancelButton.setOnAction(evt -> {
-            close();
-        });
+        cancelButton.setOnAction(evt -> close());
 
     }
 
@@ -279,6 +280,11 @@ public class NoteDetailsDialog extends Stage {
     }
 
     public void show(BaseNote note, NotesList notesList) {
+
+        if (!loaded) {
+            loadPage();
+            loaded = !loaded;
+        }
 
         setNote(note);
         setNotesList(notesList);

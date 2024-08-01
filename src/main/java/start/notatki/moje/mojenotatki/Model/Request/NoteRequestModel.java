@@ -12,6 +12,7 @@ import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
 import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,54 +29,58 @@ public class NoteRequestModel {
     private final ExecutorService executor = ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
     private final CountDownLatch latch = new CountDownLatch(1);
 
-    private boolean checkOrSetDirectory() {
+    private CompletableFuture<Boolean> checkOrSetDirectory() {
 
-        Future<Boolean> future = executor.submit(() -> {
-            DirectoryUtils.checkOrSetOutputDirectory();
-            return FilesManager.checkNotesDirectoryExistence();
+        return DirectoryUtils.checkOrSetOutputDirectory()
+                .thenCompose(exists -> {
+                    if (exists) {
+                        return CompletableFuture.completedFuture(true);
+                    } else {
+                        return FilesManager.checkNotesDirectoryExistence();
+                    }
+                });
+    }
+
+    public CompletableFuture<Boolean> toSave(BaseNoteRequest req) {
+
+        note = req.getOriginalInstance();
+
+        return checkOrSetDirectory().thenCompose(directoryExists -> {
+            if (!directoryExists) {
+                return CompletableFuture.completedFuture(false);
+            }
+
+            return handleRenameIfNeeded(req).thenCompose(renameSuccess -> {
+                if (!renameSuccess) {
+                    return CompletableFuture.completedFuture(false);
+                }
+
+                return handleSave(req);
+            });
+        }).exceptionally(ex -> {
+//            FilesManager.registerException(ex);
+            return false;
         });
 
-        try {
-            return future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            FilesManager.registerException(e);
-            return false;
-        }
     }
 
-    public boolean toSave(BaseNoteRequest req) {
+    private CompletableFuture<Boolean> handleRenameIfNeeded(BaseNoteRequest req) {
 
-        note = req.getOriginalInstance();
-
-        if (!checkOrSetDirectory()) {
-            return false;
-        }
-
-        note = req.getOriginalInstance();
-
-        if (!handleRenameIfNeeded(req)) {
-            return false;
-        }
-
-        return handleSave(req);
-    }
-
-    private boolean handleRenameIfNeeded(BaseNoteRequest req) {
-
-        if (note != null) {
-            if (note.getTitle().equals(req.getTitle())) {
-                path = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
+        return CompletableFuture.supplyAsync(() -> {
+            if (note != null) {
+                if (note.getTitle().equals(req.getTitle())) {
+                    path = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
+                    return true;
+                } else {
+                    Path oldPath = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
+                    path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
+                    return renameFile(oldPath, path);
+                }
             } else {
-                Path oldPath = Paths.get(FilesManager.getSaveNotesPath(), note.getTitle() + extension);
                 path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
-                Future<Boolean> renameFuture = executor.submit(() -> renameFile(oldPath, path));
-                return getFutureResult(renameFuture);
+                return true;
             }
-        } else {
-            path = Paths.get(FilesManager.getSaveNotesPath(), req.getTitle() + extension);
-        }
-
-        return true;
+        }, executor);
     }
 
     private boolean renameFile(Path oldPath, Path newPath) {
@@ -89,30 +94,25 @@ public class NoteRequestModel {
         }
     }
 
-    private boolean handleSave(BaseNoteRequest req) {
+    private CompletableFuture<Boolean> handleSave(BaseNoteRequest req) {
 
-        Future<Void> convertFuture = executor.submit(() -> {
+        return CompletableFuture.runAsync(() -> {
             synchronized (sb) {
                 convertContent(req, note);
                 latch.countDown();
             }
-
-            return null;
-        });
-
-        Future<Boolean> saveFuture = executor.submit(() -> {
+        }, executor).thenCompose(v -> CompletableFuture.supplyAsync(() -> {
             try {
                 latch.await();
                 synchronized (sb) {
                     return save(path);
                 }
             } catch (InterruptedException e) {
+                FilesManager.registerException(e);
                 Thread.currentThread().interrupt();
                 return false;
             }
-        });
-
-        return getFutureResult(convertFuture) && getFutureResult(saveFuture);
+        }, executor));
     }
 
     private boolean save(Path path) {

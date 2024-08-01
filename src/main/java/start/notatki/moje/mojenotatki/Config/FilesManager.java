@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 public class FilesManager {
@@ -49,18 +50,27 @@ public class FilesManager {
         return findValueInFile(getConfigFilePath(), "notesDirectory");
     }
 
-    public static boolean checkNotesDirectoryExistence() {
+    public static CompletableFuture<Boolean> checkNotesDirectoryExistence() {
 
-        Path path = getConfigFilePath();
+        return CompletableFuture.supplyAsync(() -> {
+            Path path = getConfigFilePath();
+            String notesDirectoryPath = findValueInFile(path, "notesDirectory");
 
-        String notesDirectoryPath = findValueInFile(path, "notesDirectory");
+            if (notesDirectoryPath != null) {
+                Path notesDirectory = Path.of(notesDirectoryPath);
 
-        if (notesDirectoryPath != null) {
-            Path notesDirectory = Path.of(notesDirectoryPath);
-            return Files.exists(notesDirectory) && Files.isDirectory(notesDirectory);
-        }
-
-        return false;
+                if (!Files.exists(notesDirectory)) {
+                    try {
+                        Files.createDirectories(notesDirectory);
+                    } catch (IOException e) {
+                        registerException(e);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
     private static String findValueInFile(Path configFilePath, String key) {
@@ -122,21 +132,6 @@ public class FilesManager {
         }
     }
 
-    public static void log(String exc) {
-
-        String logsDir = getProperty("logs.dir");
-        String logsFile = getProperty("logs.fileName");
-
-        Path path = getPath(logsDir, logsFile);
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile(), true))) {
-            writer.write("Info: " + exc);
-            writer.newLine();
-        } catch (IOException e) {
-            //Ignore
-        }
-    }
-
     public static void registerException(Exception exc) {
 
         String logsDir = getProperty("logs.dir");
@@ -149,6 +144,17 @@ public class FilesManager {
             writer.newLine();
             writer.write("Message: " + exc.getMessage());
             writer.newLine();
+
+            StackTraceElement[] stackTrace = exc.getStackTrace();
+            if (stackTrace.length > 0) {
+                writer.write("Stack trace:");
+                writer.newLine();
+                for (StackTraceElement element : stackTrace) {
+                    writer.write("    at " + element.toString());
+                    writer.newLine();
+                }
+            }
+
             writer.newLine();
         } catch (IOException e) {
             //Ignore
@@ -160,12 +166,17 @@ public class FilesManager {
         String path = getSaveNotesPath();
         List<BaseNote> notes = new ArrayList<>();
 
+        if (path == null) {
+            return FXCollections.observableArrayList();
+        }
+
         try (Stream<Path> files = Files.list(Path.of(path))) {
 
             List<Path> filePaths = files
                     .filter(Files::isRegularFile)
                     .filter(Files::isReadable)
                     .toList();
+
 
             for (Path filePath : filePaths) {
                 try (BufferedReader reader = Files.newBufferedReader(filePath)) {
@@ -197,14 +208,41 @@ public class FilesManager {
                         note.setCreatedDate(createdDate);
                         notes.add(note);
                     }
+                } catch (Exception e) {
+                    FilesManager.registerException(e);
                 }
             }
-
         } catch (IOException e) {
             FilesManager.registerException(e);
             return null;
         }
         notes.removeIf(Objects::isNull);
         return FXCollections.observableArrayList(notes);
+    }
+
+    public static void moveToNewLocation(String newPath) {
+
+        Path oldP = Path.of(getSaveNotesPath());
+        Path newP = Path.of(newPath);
+
+        try {
+            if (!Files.exists(newP)) {
+                Files.createDirectories(newP);
+            }
+
+            try (Stream<Path> files = Files.list(oldP)) {
+                files.forEach(file -> {
+                    Path newFilePath = newP.resolve(oldP.relativize(file));
+                    try {
+                        Files.move(file, newFilePath);
+                    } catch (IOException e) {
+                        FilesManager.registerException(e);
+                    }
+                });
+            }
+            Files.delete(oldP);
+        } catch (IOException e) {
+            FilesManager.registerException(e);
+        }
     }
 }

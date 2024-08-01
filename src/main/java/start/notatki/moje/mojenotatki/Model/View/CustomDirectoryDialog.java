@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Config.LoadStyles;
 
 import java.io.File;
@@ -19,7 +20,7 @@ public class CustomDirectoryDialog extends Stage {
     private final String defaultPath = Path.of(".").toAbsolutePath().normalize() + File.separator + "Notes";
 
     private final Label lbInfoText = new Label();
-    private final TextField tfPath = new TextField(defaultPath);
+    private final TextField tfPath = new TextField();
 
     private final Button explorerButton = new Button("...");
 
@@ -96,6 +97,13 @@ public class CustomDirectoryDialog extends Stage {
 
         Separator separator1 = new Separator();
         Separator separator2 = new Separator();
+
+        String path = FilesManager.getSaveNotesPath();
+        tfPath.setText(defaultPath);
+
+        if (path != null) {
+            tfPath.setText(path);
+        }
 
         dialogScene.getChildren().addAll(lbInfoText, separator1, selectingBox, separator2, btnBar);
 

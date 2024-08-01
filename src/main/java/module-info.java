@@ -6,8 +6,10 @@ module start.notatki.moje.mojenotatki {
     requires java.sql;
     requires javafx.graphics;
 
+    exports start.notatki.moje.mojenotatki;
+    exports start.notatki.moje.mojenotatki.Model.View.RightPage;
+    exports start.notatki.moje.mojenotatki.Model.View;
+    exports start.notatki.moje.mojenotatki.Note;
+
     opens start.notatki.moje.mojenotatki.Note to javafx.base;
-    exports start.notatki.moje.mojenotatki to javafx.graphics;
-    exports start.notatki.moje.mojenotatki.Model.View.RightPage to javafx.graphics;
-    exports start.notatki.moje.mojenotatki.Model.View to javafx.graphics;
 }

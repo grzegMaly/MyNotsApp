@@ -1,5 +1,6 @@
 package start.notatki.moje.mojenotatki.Model.View.RightPage;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -10,15 +11,21 @@ import javafx.scene.layout.VBox;
 import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Model.Request.NoteRequestModel;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+import start.notatki.moje.mojenotatki.Model.View.Page;
 import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.NoteDetailsDialog;
+import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
-public class NotesList extends VBox {
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
+public class NotesList extends VBox implements Page {
+
+    private ObservableList<BaseNote> notes;
     private final MainScene mainScene;
-    ObservableList<BaseNote> notes;
     private final Button cancelButton = new Button("Cancel");
     private final Button reloadButton = new Button("Reload");
     private final HBox btnBar = new HBox();
@@ -29,22 +36,40 @@ public class NotesList extends VBox {
     private final TableColumn<BaseNote, String> colCategoryPriority = new TableColumn<>("Category/Priority");
     private final TableColumn<BaseNote, String> colDeadline = new TableColumn<>("Deadline");
 
-    private boolean loaded = false;
-    private NoteRequestModel model = new NoteRequestModel();
+    private final NoteRequestModel model = new NoteRequestModel();
+    private final ExecutorService executor =
+            ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
 
     public NotesList(MainScene mainScene) {
-
-        this.getStyleClass().add("thisNotesList");
         this.mainScene = mainScene;
     }
 
-    public void reload() {
-        if (FilesManager.checkNotesDirectoryExistence() && !loaded) {
-            this.getChildren().addAll(btnBar, tblNotes);
+    @Override
+    public void loadPage() {
+
+        CountDownLatch latch = new CountDownLatch(3);
+
+        executor.submit(() -> {
+            this.getStyleClass().add("thisNotesList");
+            latch.countDown();
+        });
+
+        executor.submit(() -> {
             loadElements();
+            latch.countDown();
+        });
+
+        executor.submit(() -> {
             loadTableView();
-            loadNotes();
-            loaded = true;
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+            Platform.runLater(() -> this.getChildren().addAll(btnBar, tblNotes));
+        } catch (InterruptedException e) {
+            FilesManager.registerException(e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -69,8 +94,7 @@ public class NotesList extends VBox {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && (!row.isEmpty())) {
                     BaseNote rowData = row.getItem();
                     NoteDetailsDialog.getInstance().show(rowData, this);
-                }
-                else if (event.getButton() == MouseButton.SECONDARY && (!row.isEmpty())) {
+                } else if (event.getButton() == MouseButton.SECONDARY && (!row.isEmpty())) {
                     showContextMenu(row, event.getScreenX(), event.getScreenY());
                 }
             });
@@ -94,7 +118,7 @@ public class NotesList extends VBox {
         contextMenu.show(row, sceneX, sceneY);
     }
 
-    private void loadNotes() {
+    public void loadNotes() {
 
         notes = FilesManager.loadNotes();
         tblNotes.getItems().addAll(notes);
@@ -126,14 +150,19 @@ public class NotesList extends VBox {
             return new ReadOnlyStringWrapper("-");
         });
 
-        tblNotes.getColumns().addAll(colTitle, colType, colCategoryPriority, colDeadline);
+        tblNotes.getColumns().addAll(List.of(colTitle, colType, colCategoryPriority, colDeadline));
         tblNotes.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         reloadButton.setOnAction(event -> reloadNotes());
+        cancelButton.setOnAction(event -> cancel());
     }
 
     public void reloadNotes() {
         tblNotes.getItems().clear();
         loadNotes();
+    }
+
+    public void cancel() {
+        mainScene.useNotesList(false);
     }
 }

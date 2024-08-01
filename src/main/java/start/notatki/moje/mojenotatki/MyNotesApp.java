@@ -8,6 +8,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import start.notatki.moje.mojenotatki.Config.BaseConfig;
+import start.notatki.moje.mojenotatki.Config.FilesManager;
 import start.notatki.moje.mojenotatki.Config.LoadStyles;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
 import start.notatki.moje.mojenotatki.utils.CustomAlert;
@@ -19,6 +20,7 @@ import java.util.concurrent.*;
 public class MyNotesApp extends Application {
 
     private static Stage primaryStage;
+    MainScene mainScene = new MainScene();
     private final ExecutorService executor =
             ExecutorServiceManager.createCachedThreadPool(this.getClass().getSimpleName());
 
@@ -36,8 +38,16 @@ public class MyNotesApp extends Application {
         primaryStage = stage;
         stage.setTitle("Your Favorite Notes");
 
-        Callable<Scene> callableSceneLoader = () -> loadScene(stage);
-        Future<Scene> result = executor.submit(callableSceneLoader);
+        /*CompletableFuture<Boolean> directoryCheck = DirectoryUtils.checkOrSetOutputDirectory();
+        directoryCheck.thenAccept(directoryExists -> {
+            if (!directoryExists) {
+                Platform.runLater(this::showErrorDialog);
+            } else {
+
+            }
+        });*/
+
+        Future<Scene> result = executor.submit(() -> loadScene(stage));
 
         executor.submit(() -> {
             try {
@@ -56,19 +66,36 @@ public class MyNotesApp extends Application {
             }
         });
 
-        stage.setOnShowing(event -> DirectoryUtils.checkOrSetOutputDirectory());
+
+        stage.setOnShowing(event -> {
+            DirectoryUtils.checkOrSetOutputDirectory().thenAccept(success -> {
+                //Do nothing
+            });
+        });
     }
 
     private Scene loadScene(Stage stage) {
+
+        CountDownLatch latch = new CountDownLatch(1);
 
         executor.submit(() -> {
             Image iconResult = BaseConfig.getIcon();
             if (iconResult != null && !iconResult.isError()) {
                 Platform.runLater(() -> stage.getIcons().add(iconResult));
             }
+            latch.countDown();
         });
 
-        MainScene mainScene = new MainScene();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            FilesManager.registerException(e);
+            Thread.currentThread().interrupt();
+            showErrorDialog();
+            return null;
+        }
+
+        mainScene.loadPage();
         Scene scene = new Scene(mainScene);
 
         return LoadStyles.loadMainStyles(scene) ? scene : null;
