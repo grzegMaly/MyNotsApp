@@ -24,27 +24,20 @@ public class NoteDetailsDialog extends Stage implements Page {
 
     private VBox vBox;
 
-    private HBox hbTitle;
     private Label lblTitle1;
     private Label lblTitle2;
     private TextField tfTitle;
-    private StackPane spTitle;
 
-    private HBox hbType;
     private Label lblType1;
     private Label lblType2;
     private ComboBox<String> cbType;
-    private StackPane spType;
 
     private Label lblCreatedDate;
 
-    private HBox hbCategoryPriority;
     private Label lblCategoryPriority1;
     private Label lblCategoryPriority2;
     private ComboBox<String> cbCategoryPriority;
-    private StackPane spCategoryPriority;
 
-    private HBox hbDeadline;
     private Label lblDeadline1;
     private Label lblDeadline2;
     private DatePicker dpDeadline;
@@ -52,9 +45,7 @@ public class NoteDetailsDialog extends Stage implements Page {
 
     private TextArea taContent;
 
-    private Button editButton;
     private Button saveButton;
-    private Button cancelButton;
 
     private static final NoteDetailsDialog dialog = new NoteDetailsDialog();
 
@@ -106,8 +97,8 @@ public class NoteDetailsDialog extends Stage implements Page {
         HBox buttons = new HBox();
         loadButtonsAndEvents(buttons);
 
-        hbTitle = new HBox();
-        spTitle = new StackPane();
+        HBox hbTitle = new HBox();
+        StackPane spTitle = new StackPane();
         lblTitle1 = new Label();
         lblTitle2 = new Label();
         tfTitle = new TextField();
@@ -115,8 +106,8 @@ public class NoteDetailsDialog extends Stage implements Page {
         spTitle.setAlignment(Pos.CENTER_LEFT);
         hbTitle.getChildren().addAll(lblTitle1, spTitle);
 
-        hbType = new HBox();
-        spType = new StackPane();
+        HBox hbType = new HBox();
+        StackPane spType = new StackPane();
         lblType1 = new Label();
         lblType2 = new Label();
         cbType = new ComboBox<>();
@@ -125,8 +116,8 @@ public class NoteDetailsDialog extends Stage implements Page {
         spType.setAlignment(Pos.CENTER_LEFT);
         hbType.getChildren().addAll(lblType1, spType);
 
-        hbCategoryPriority = new HBox();
-        spCategoryPriority = new StackPane();
+        HBox hbCategoryPriority = new HBox();
+        StackPane spCategoryPriority = new StackPane();
         lblCategoryPriority1 = new Label();
         lblCategoryPriority2 = new Label();
         cbCategoryPriority = new ComboBox<>();
@@ -134,7 +125,7 @@ public class NoteDetailsDialog extends Stage implements Page {
         spCategoryPriority.setAlignment(Pos.CENTER_LEFT);
         hbCategoryPriority.getChildren().addAll(lblCategoryPriority1, spCategoryPriority);
 
-        hbDeadline = new HBox();
+        HBox hbDeadline = new HBox();
         spDeadline = new StackPane();
         lblDeadline1 = new Label();
         lblDeadline2 = new Label();
@@ -171,9 +162,9 @@ public class NoteDetailsDialog extends Stage implements Page {
 
     private void loadButtonsAndEvents(HBox buttons) {
 
-        editButton = new Button("Edit");
+        Button editButton = new Button("Edit");
         saveButton = new Button("Save");
-        cancelButton = new Button("Cancel");
+        Button cancelButton = new Button("Cancel");
 
         editButton.getStyleClass().add("ndd-Button");
         saveButton.getStyleClass().add("ndd-Button");
@@ -202,7 +193,7 @@ public class NoteDetailsDialog extends Stage implements Page {
             if (note instanceof RegularNote regularNote) {
                 cbCategoryPriority.setValue(BaseNote.convertEnumToString(regularNote.getCategory()));
             } else {
-                cbCategoryPriority.setValue(categories.get(0));
+                cbCategoryPriority.setValue(categories.getFirst());
             }
 
             lblDeadline1.setVisible(false);
@@ -213,7 +204,7 @@ public class NoteDetailsDialog extends Stage implements Page {
             if (note instanceof DeadlineNote deadlineNote) {
                 cbCategoryPriority.setValue(BaseNote.convertEnumToString(deadlineNote.getPriority()));
             } else {
-                cbCategoryPriority.setValue(priorities.get(0));
+                cbCategoryPriority.setValue(priorities.getFirst());
             }
 
             if (dpDeadline.getValue() == null) {

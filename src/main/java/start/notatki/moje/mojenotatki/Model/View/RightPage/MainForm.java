@@ -17,8 +17,10 @@ import start.notatki.moje.mojenotatki.Note.BaseNote;
 import start.notatki.moje.mojenotatki.Note.DeadlineNote;
 import start.notatki.moje.mojenotatki.Note.RegularNote;
 import start.notatki.moje.mojenotatki.Model.View.MainScene;
+import start.notatki.moje.mojenotatki.utils.DirectoryUtils;
 import start.notatki.moje.mojenotatki.utils.ExecutorServiceManager;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -130,7 +132,7 @@ public class MainForm extends GridPane implements Page {
 
         ComboBox<String> temp = new ComboBox<>();
         temp.getItems().addAll(types);
-        temp.setValue(types.get(0));
+        temp.setValue(types.getFirst());
 
         return temp;
     }
@@ -188,7 +190,7 @@ public class MainForm extends GridPane implements Page {
 
         styleAndLoadButtons();
         styleOtherElements();
-        deadlineVisibility(true);
+        deadlineVisibility(  true);
     }
 
     private void styleAndLoadButtons() {
@@ -336,6 +338,7 @@ public class MainForm extends GridPane implements Page {
 
     private void save(ActionEvent e) {
 
+        DirectoryUtils.checkOrSetOutputDirectory();
         if (!validateElements()) {
             addListeners();
             return;
@@ -356,11 +359,14 @@ public class MainForm extends GridPane implements Page {
             tfTitle.getStyleClass().add("badElement");
             flag = false;
         } else {
-
-            Path path = Path.of(FilesManager.getSaveNotesPath(), tfTitle.getText() + ".txt");
-            if (Files.exists(path)) {
-                tfTitle.getStyleClass().add("badElement");
-                flag = false;
+            try {
+                Path path = Path.of(FilesManager.getSaveNotesPath(), tfTitle.getText() + ".txt");
+                if (Files.exists(path)) {
+                    tfTitle.getStyleClass().add("badElement");
+                    flag = false;
+                }
+            } catch (NullPointerException e) {
+                FilesManager.registerException(e);
             }
         }
 

@@ -38,15 +38,6 @@ public class MyNotesApp extends Application {
         primaryStage = stage;
         stage.setTitle("Your Favorite Notes");
 
-        /*CompletableFuture<Boolean> directoryCheck = DirectoryUtils.checkOrSetOutputDirectory();
-        directoryCheck.thenAccept(directoryExists -> {
-            if (!directoryExists) {
-                Platform.runLater(this::showErrorDialog);
-            } else {
-
-            }
-        });*/
-
         Future<Scene> result = executor.submit(() -> loadScene(stage));
 
         executor.submit(() -> {
@@ -67,11 +58,7 @@ public class MyNotesApp extends Application {
         });
 
 
-        stage.setOnShowing(event -> {
-            DirectoryUtils.checkOrSetOutputDirectory().thenAccept(success -> {
-                //Do nothing
-            });
-        });
+        stage.setOnShowing(event -> DirectoryUtils.checkOrSetOutputDirectory());
     }
 
     private Scene loadScene(Stage stage) {

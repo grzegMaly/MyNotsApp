@@ -39,6 +39,11 @@ public class CustomDirectoryDialog extends Stage {
         loadButtons();
         loadStyles();
         loadContent();
+
+        setOnCloseRequest(evt -> {
+            close();
+            evt.consume();
+        });
     }
 
     private void loadButtons() {

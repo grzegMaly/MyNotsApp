@@ -46,7 +46,6 @@ public class FilesManager {
     }
 
     public static String getSaveNotesPath() {
-
         return findValueInFile(getConfigFilePath(), "notesDirectory");
     }
 
@@ -89,7 +88,6 @@ public class FilesManager {
         } catch (IOException e) {
             FilesManager.registerException(e);
         }
-
         return null;
     }
 
@@ -150,7 +148,7 @@ public class FilesManager {
                 writer.write("Stack trace:");
                 writer.newLine();
                 for (StackTraceElement element : stackTrace) {
-                    writer.write("    at " + element.toString());
+                    writer.write(" at " + element.toString());
                     writer.newLine();
                 }
             }
